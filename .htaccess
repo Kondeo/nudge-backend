@@ -1,0 +1,13 @@
+RewriteEngine On
+ 
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(login.*)$ index.php [QSA,L]
+
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(join.*)$ index.php [QSA,L]
+
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(users.*)$ index.php [QSA,L]

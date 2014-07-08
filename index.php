@@ -25,14 +25,178 @@ include 'Slim/Slim.php';
 
 $app = new Slim();
 
+$app->post('/login', 'userLogin');
+$app->post('/join', 'userJoin');
+
 $app->get('/users/:id', 'getUser');
-$app->post('/users', 'addUser');
 $app->put('/users/:id', 'updateUser');
 $app->delete('/users/:id', 'deleteUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
 
 $app->run();
+
+function userLogin() {
+    $request = Slim::getInstance()->request();
+    $user = json_decode($request->getBody());
+
+    //Get ID
+    $sql = "SELECT
+
+        id
+
+        FROM users WHERE username=:username AND password=:password LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("username", $user->username);
+        $stmt->bindParam("password", $user->password);
+        $stmt->execute();
+        $response = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    //Generate a session token
+    $length = 24;
+    $randomstring = openssl_random_pseudo_bytes($length, $strong);
+    if(!($strong = true)){
+        echo '{"error":{"text":"Did not generate secure random session token"}}';
+        exit;
+    }
+
+    //Insert session token
+    $sql = "INSERT INTO sessions
+
+        (id, key)
+
+        VALUES
+
+        (:id, :key)";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("id", $response->id);
+        $stmt->bindParam("key", $randomstring);
+        $stmt->execute();
+        $response->session_token = $randomstring;
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+}
+function userJoin() {
+    $request = Slim::getInstance()->request();
+    $user = json_decode($request->getBody());
+
+    //Check if username exists
+    $sql = "SELECT
+
+        username
+
+        FROM users WHERE username=:username LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("username", $user->username);
+        $stmt->bindParam("password", $user->password);
+        $stmt->execute();
+        $usercheck = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    //If exists echo error and cancel
+    if($usercheck->username = $user->username){
+        echo '{"error":{"text":"Username Already Exists","errorid":"22"}}';
+        exit;
+    }
+
+    //Generate a salt
+    $length = 24;
+    $salt = openssl_random_pseudo_bytes($length);
+
+    //Crypt salt and password
+    $passwordcrypt = crypt($user->password, $salt);
+
+    //Create user
+    $sql = "INSERT INTO users
+
+    (username, password, firstname, lastname,
+        phone, email, address1, address2,
+        city, state, zip, profile)
+
+    VALUES
+
+    (:username, :password, :firstname, :lastname,
+        :phone, :email, :address1, :address2,
+        :city, :state, :zip, :profile)";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("username", $user->username);
+        $stmt->bindParam("password", $passwordcrypt);
+        $stmt->bindParam("salt", $salt);
+        $stmt->bindParam("firstname", $user->firstname);
+        $stmt->bindParam("lastname", $user->lastname);
+        $stmt->bindParam("phone", $user->phone);
+        $stmt->bindParam("email", $user->email);
+        $stmt->bindParam("address1", $user->address1);
+        $stmt->bindParam("address2", $user->address2);
+        $stmt->bindParam("city", $user->city);
+        $stmt->bindParam("state", $user->state);
+        $stmt->bindParam("zip", $user->zip);
+        $stmt->bindParam("profile", $user->profile);
+        $stmt->execute();
+        $newusrid = $db->lastInsertId();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    //Generate a session token
+    $length = 24;
+    $randomstring = openssl_random_pseudo_bytes($length, $strong);
+    if(!($strong = true)){
+        echo '{"error":{"text":"Did not generate secure random session token"}}';
+        exit;
+    }
+
+    //Insert session token
+    $sql = "INSERT INTO sessions
+
+        (id, key)
+
+        VALUES
+
+        (:id, :key)";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("id", $response->id);
+        $stmt->bindParam("key", $randomstring);
+        $stmt->execute();
+        $response->session_token = $randomstring;
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    echo '{"result":{"session_token":"'. $randomstring .'"}}';
+
+}
 
 function getUser($id) {
     $request = Slim::getInstance()->request();
@@ -44,7 +208,7 @@ function getUser($id) {
         state, zip, profile
 
         FROM users WHERE id=:id and password=:password";
-        
+
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
@@ -59,49 +223,9 @@ function getUser($id) {
     }
 }
 
-function addUser() {
-	$request = Slim::getInstance()->request();
-    $user = json_decode($request->getBody());
-    $sql = "INSERT INTO users
-
-    (username, password, firstname, lastname, phone, 
-    	email, address1, address2, city,
-        state, zip, profile) 
-
-    VALUES
-
-    (:username, :password, :firstname, :lastname, :phone, 
-        :email, :address1, :address2, :city,
-        :state, :zip, :profile)";
-    try {
-        $db = getConnection();
-        $stmt = $db->prepare($sql);
-
-        $stmt->bindParam("username", $user->username);
-        $stmt->bindParam("password", $user->password);
-        $stmt->bindParam("firstname", $user->firstname);
-        $stmt->bindParam("lastname", $user->lastname);
-        $stmt->bindParam("phone", $user->phone);
-        $stmt->bindParam("email", $user->email);
-        $stmt->bindParam("address1", $user->address1);
-        $stmt->bindParam("address2", $user->address2);
-        $stmt->bindParam("city", $user->city);
-        $stmt->bindParam("state", $user->state);
-        $stmt->bindParam("zip", $user->zip);
-        $stmt->bindParam("profile", $user->profile);
-
-        $stmt->execute();
-        $contact->id = $db->lastInsertId();
-        $db = null;
-        echo json_encode($contact);
-    } catch(PDOException $e) {
-        echo '{"error":{"text":'. $e->getMessage() .'}}';
-    }
-}
-
 function updateUser($id) {
 
-    //Done!
+    //Needs security
 
 	$request = Slim::getInstance()->request();
     $body = $request->getBody();
@@ -148,6 +272,9 @@ function updateUser($id) {
 }
 
 function deleteUser($id) {
+
+    //Needs security
+
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
     $user = json_decode($body);
@@ -273,9 +400,9 @@ function findByParameter() {
 
 function getConnection() {
 	$dbhost="kondeo.com";
-	$dbuser="treemadmin";
-	$dbpass="13Brownies";
-	$dbname="treemdb";
+	$dbuser="nudgeit";
+	$dbpass="nudgeit";
+	$dbname="nudgedb";
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	return $dbh;
