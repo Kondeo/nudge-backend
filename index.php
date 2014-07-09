@@ -40,6 +40,34 @@ function userLogin() {
     $request = Slim::getInstance()->request();
     $user = json_decode($request->getBody());
 
+    //Get Salt
+    $sql = "SELECT
+
+        salt
+
+        FROM users WHERE username=:username LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("username", $user->username);
+        $stmt->execute();
+        $response = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    //If user does not exist
+    if(!isset($response->salt)){
+        echo '{"error":{"text":"Username does not exist","errorid":"23"}}';
+        exit;
+    }
+
+    //Crypt salt and password
+    $passwordcrypt = crypt($user->password, $salt);
+
     //Get ID
     $sql = "SELECT
 
@@ -51,12 +79,18 @@ function userLogin() {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("username", $user->username);
-        $stmt->bindParam("password", $user->password);
+        $stmt->bindParam("password", $passwordcrypt);
         $stmt->execute();
         $response = $stmt->fetchObject();
         $db = null;
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    //If password is incorrect
+    if(!isset($response->id)){
+        echo '{"error":{"text":"Password is incorrect","errorid":"24"}}';
         exit;
     }
 
