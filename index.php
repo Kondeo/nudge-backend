@@ -28,7 +28,7 @@ $app = new Slim();
 $app->post('/login', 'userLogin');
 $app->post('/join', 'userJoin');
 
-$app->delete('/users/:id', 'deleteUser');
+$app->delete('/users', 'deleteUser');
 $app->put('/users', 'updateUser');
 $app->get('/users', 'getUser');
 //INCOMPLETE:
