@@ -356,20 +356,41 @@ function updateUser() {
 }
 
 function deleteUser() {
-
-    //Needs security
-
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
     $user = json_decode($body);
-	$sql = "DELETE FROM users WHERE id=:id AND password=:password";
+
+    $sql = "SELECT
+
+        id
+
+        FROM sessions WHERE key=:key LIMIT 1";
+
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $id);
-        $stmt->bindParam("password", $user->$password);
+        $stmt->bindParam("key", $user->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+        echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+	$sql = "DELETE FROM users WHERE id=:id";
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("id", $session->id);
         $stmt->execute();
         $db = null;
+        echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
