@@ -28,11 +28,11 @@ $app = new Slim();
 $app->post('/login', 'userLogin');
 $app->post('/join', 'userJoin');
 
+$app->delete('/users/:id', 'deleteUser');
 $app->put('/users', 'updateUser');
 $app->get('/users', 'getUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
-//$app->delete('/users/:id', 'deleteUser');
 
 $app->run();
 
