@@ -29,7 +29,7 @@ $app->post('/login', 'userLogin');
 $app->post('/join', 'userJoin');
 
 $app->put('/users', 'updateUser');
-$app->get('/users/:id', 'getUser');
+$app->get('/users', 'getUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
 //$app->delete('/users/:id', 'deleteUser');
@@ -238,7 +238,7 @@ function userJoin() {
 
 }
 
-function getUser($id) {
+function getUser() {
     $request = Slim::getInstance()->request();
     $user = json_decode($request->getBody());
 
