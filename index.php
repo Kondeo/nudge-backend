@@ -286,7 +286,7 @@ function getUser() {
     }
 }
 
-function updateUser($id) {
+function updateUser() {
 	$request = Slim::getInstance()->request();
     $body = $request->getBody();
     $user = json_decode($body);
