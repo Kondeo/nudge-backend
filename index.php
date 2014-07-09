@@ -241,19 +241,42 @@ function userJoin() {
 function getUser($id) {
     $request = Slim::getInstance()->request();
     $user = json_decode($request->getBody());
-	$sql = "SELECT
 
-        firstname, lastname, phone, 
-        email, address1, address2, city,
-        state, zip, profile
+    $sql = "SELECT
 
-        FROM users WHERE id=:id and password=:password";
+        id
+
+        FROM sessions WHERE key=:key LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $id);
-        $stmt->bindParam("password", $user->password);
+        $stmt->bindParam("key", $user->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+        echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+	$sql = "SELECT
+
+        username, firstname, lastname, phone, 
+        email, address1, address2, city,
+        state, zip, profile
+
+        FROM users WHERE id=:id";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("id", $session->id);
         $stmt->execute();
         $user = $stmt->fetchObject();
         $db = null;
