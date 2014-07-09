@@ -29,10 +29,10 @@ $app->post('/login', 'userLogin');
 $app->post('/join', 'userJoin');
 
 $app->get('/users/:id', 'getUser');
-$app->put('/users/:id', 'updateUser');
-$app->delete('/users/:id', 'deleteUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
+//$app->put('/users/:id', 'updateUser');
+//$app->delete('/users/:id', 'deleteUser');
 
 $app->run();
 
