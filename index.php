@@ -28,7 +28,7 @@ $app = new Slim();
 $app->post('/login', 'userLogin');
 $app->post('/join', 'userJoin');
 
-$app->put('/users/:id', 'updateUser');
+$app->put('/users', 'updateUser');
 $app->get('/users/:id', 'getUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
