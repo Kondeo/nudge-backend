@@ -355,7 +355,7 @@ function updateUser() {
     }
 }
 
-function deleteUser($id) {
+function deleteUser() {
 
     //Needs security
 
