@@ -84,12 +84,18 @@ function userLogin() {
         $stmt->bindParam("key", $randomstring);
         $stmt->execute();
         $response->session_token = $randomstring;
+        $session_token = $randomstring;
         $db = null;
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
         exit;
     }
+
+    //Echo session token
+    echo '{"result":{"session_token":"'. $session_token .'"}}';
+
 }
+
 function userJoin() {
     $request = Slim::getInstance()->request();
     $user = json_decode($request->getBody());
