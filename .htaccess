@@ -2,12 +2,12 @@ RewriteEngine On
  
 RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(login.*)$ index.php [QSA,L]
+RewriteRule ^(login.*)$ users.php [QSA,L]
 
 RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(join.*)$ index.php [QSA,L]
+RewriteRule ^(join.*)$ users.php [QSA,L]
 
 RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(users.*)$ index.php [QSA,L]
+RewriteRule ^(users.*)$ users.php [QSA,L]
