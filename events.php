@@ -25,12 +25,12 @@ include 'Slim/Slim.php';
 
 $app = new Slim();
 
-//$app->get('/events', 'getEvents');
-//$app->get('/events/user/:id', 'getUserEvents');
-//$app->get('/events/:id', 'getEvent');
-//$app->post('/events', 'newEvent');
-//$app->put('/events/:id', 'updateEvent');
-//$app->delete('/events/:id', 'deleteEvent');
+$app->get('/events', 'getEvents');
+$app->get('/events/user/:id', 'getUserEvents');
+$app->get('/events/:id', 'getEvent');
+$app->post('/events', 'newEvent');
+$app->put('/events/:id', 'updateEvent');
+$app->delete('/events/:id', 'deleteEvent');
 
 $app->run();
 
