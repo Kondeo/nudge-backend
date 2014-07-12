@@ -11,3 +11,7 @@ RewriteRule ^(join.*)$ users.php [QSA,L]
 RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(users.*)$ users.php [QSA,L]
+
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(events.*)$ events.php [QSA,L]
