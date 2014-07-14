@@ -3,7 +3,6 @@ nudge-backend
 
 Backend for Nudge
 
-Ideas:
+Todo:
 
-Time generated identifier from client allows it to access backend. Could be based on hash of time and a unique key.
-Token for each user at login.
+Need to get parties and members set up.
