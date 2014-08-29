@@ -170,13 +170,13 @@ function userJoin() {
     //Create user
     $sql = "INSERT INTO users
 
-    (username, password, firstname, lastname,
+    (username, password, salt, firstname, lastname,
         phone, email, address1, address2,
         city, state, zip, profile)
 
     VALUES
 
-    (:username, :password, :firstname, :lastname,
+    (:username, :password, :salt, :firstname, :lastname,
         :phone, :email, :address1, :address2,
         :city, :state, :zip, :profile)";
 
