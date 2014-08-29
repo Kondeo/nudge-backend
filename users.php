@@ -105,17 +105,17 @@ function userLogin() {
     //Insert session token
     $sql = "INSERT INTO sessions
 
-        (id, key)
+        (id, token)
 
         VALUES
 
-        (:id, :key)";
+        (:id, :token)";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("id", $response->id);
-        $stmt->bindParam("key", $randomstring);
+        $stmt->bindParam("token", $randomstring);
         $stmt->execute();
         $response->session_token = $randomstring;
         $session_token = $randomstring;
@@ -145,7 +145,7 @@ function userJoin() {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("username", $user->username);
-        $stmt->bindParam("password", $user->password);
+        //$stmt->bindParam("password", $user->password);
         $stmt->execute();
         $usercheck = $stmt->fetchObject();
         $db = null;
@@ -155,7 +155,7 @@ function userJoin() {
     }
 
     //If exists echo error and cancel
-    if($usercheck->username = $user->username){
+    if(isset($usercheck->username)){
         echo '{"error":{"text":"Username Already Exists","errorid":"22"}}';
         exit;
     }
@@ -170,14 +170,14 @@ function userJoin() {
     //Create user
     $sql = "INSERT INTO users
 
-    (username, password, salt, firstname, lastname,
-        phone, email, address1, address2,
+    (username, password, salt, name,
+        phone, address1, address2,
         city, state, zip, profile)
 
     VALUES
 
-    (:username, :password, :salt, :firstname, :lastname,
-        :phone, :email, :address1, :address2,
+    (:username, :password, :salt, :name,
+        :phone, :address1, :address2,
         :city, :state, :zip, :profile)";
 
     try {
@@ -186,10 +186,8 @@ function userJoin() {
         $stmt->bindParam("username", $user->username);
         $stmt->bindParam("password", $passwordcrypt);
         $stmt->bindParam("salt", $salt);
-        $stmt->bindParam("firstname", $user->firstname);
-        $stmt->bindParam("lastname", $user->lastname);
+        $stmt->bindParam("name", $user->name);
         $stmt->bindParam("phone", $user->phone);
-        $stmt->bindParam("email", $user->email);
         $stmt->bindParam("address1", $user->address1);
         $stmt->bindParam("address2", $user->address2);
         $stmt->bindParam("city", $user->city);
@@ -215,19 +213,19 @@ function userJoin() {
     //Insert session token
     $sql = "INSERT INTO sessions
 
-        (id, key)
+        (id, token)
 
         VALUES
 
-        (:id, :key)";
+        (:id, :token)";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $response->id);
-        $stmt->bindParam("key", $randomstring);
+        $stmt->bindParam("id", $newusrid);
+        $stmt->bindParam("token", $randomstring);
         $stmt->execute();
-        $response->session_token = $randomstring;
+        $session_token = $randomstring;
         $db = null;
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
@@ -246,12 +244,12 @@ function getUser() {
 
         id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $user->session_token);
+        $stmt->bindParam("token", $user->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -295,12 +293,12 @@ function updateUser() {
 
         id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $user->session_token);
+        $stmt->bindParam("token", $user->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -364,12 +362,12 @@ function deleteUser() {
 
         id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $user->session_token);
+        $stmt->bindParam("token", $user->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -507,7 +505,7 @@ function getConnection() {
 	$dbhost="kondeo.com";
 	$dbuser="nudgeit";
 	$dbpass="nudgeit";
-	$dbname="nudgedb";
+	$dbname="nudgeit";
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	return $dbh;
