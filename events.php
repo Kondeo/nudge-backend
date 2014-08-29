@@ -157,7 +157,7 @@ function updateEvent($id) {
     }
 }
 
-function deleteUser($id) {
+function deleteEvent($id) {
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
     $requestjson = json_decode($body);
