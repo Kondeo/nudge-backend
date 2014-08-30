@@ -316,10 +316,9 @@ function updateUser() {
     $sql = "UPDATE users 
     SET 
     
-    firstname=:firstname,
-    lastname=:lastname,
+    username=:username,
+    name=:name,
     phone=:phone, 
-    email=:email,
     address1=:address1,
     address2=:address2,
     city=:city,
@@ -334,11 +333,9 @@ function updateUser() {
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam("id", $session->id);
-        $stmt->bindParam("password", $user->password);
-        $stmt->bindParam("firstname", $user->firstname);
-        $stmt->bindParam("lastname", $user->lastname);
+        $stmt->bindParam("username", $user->username);
+        $stmt->bindParam("name", $user->name);
         $stmt->bindParam("phone", $user->phone);
-        $stmt->bindParam("email", $user->email);
         $stmt->bindParam("address1", $user->address1);
         $stmt->bindParam("address2", $user->address2);
         $stmt->bindParam("city", $user->city);
@@ -399,6 +396,18 @@ function deleteUser() {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("user_id", $session->id);
+        $stmt->execute();
+        $db = null;
+        echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    $sql = "DELETE FROM events WHERE host_id=:host_id";
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("host_id", $session->id);
         $stmt->execute();
         $db = null;
         echo json_encode($user);
