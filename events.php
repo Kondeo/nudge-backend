@@ -214,7 +214,6 @@ function getInvitedEvents() {
     }
 
     echo json_encode($invitedevents);
-
 }
 
 function getEvent($id) {

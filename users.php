@@ -128,7 +128,6 @@ function userLogin() {
 
     //Echo session token
     echo '{"result":{"session_token":"'. $session_token .'"}}';
-
 }
 
 function userJoin() {
@@ -234,7 +233,6 @@ function userJoin() {
     }
 
     echo '{"result":{"session_token":"'. $randomstring .'"}}';
-
 }
 
 function getUser() {
