@@ -43,7 +43,11 @@ function getEvents() {
 
         *
 
-        FROM events ORDER BY date LIMIT 200";
+        FROM events
+
+        WHERE public=1
+
+        ORDER BY date LIMIT 200";
 
     try {
         $db = getConnection();
@@ -68,7 +72,7 @@ function getUserEvents($id) {
         *
 
         FROM events
-        WHERE user_id=:user_id
+        WHERE host_id=:host_id AND public=1
         ORDER BY date
         LIMIT 200";
 
@@ -185,7 +189,7 @@ function deleteEvent($id) {
         exit;
     }
 
-    $sql = "DELETE FROM events WHERE id=:id AND user_id=:user_id LIMIT 1";
+    $sql = "DELETE FROM events WHERE id=:id AND host_id=:host_id LIMIT 1";
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
