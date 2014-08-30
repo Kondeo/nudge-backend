@@ -31,6 +31,7 @@ $app->post('/join', 'userJoin');
 $app->delete('/user', 'deleteUser');
 $app->put('/user', 'updateUser');
 $app->get('/user', 'getUser');
+$app->get('/user/:id', 'getUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
 
@@ -61,12 +62,12 @@ function userLogin() {
 
     //If user does not exist
     if(!isset($response->salt)){
-        echo '{"error":{"text":"Username does not exist","errorid":"23"}}';
+        echo '{"error":{"text":"Username' . $user->username . ' does not exist","errorid":"23"}}';
         exit;
     }
 
     //Crypt salt and password
-    $passwordcrypt = crypt($user->password, $salt);
+    $passwordcrypt = crypt($user->password, $response->salt);
 
     //Get ID
     $sql = "SELECT
@@ -105,16 +106,16 @@ function userLogin() {
     //Insert session token
     $sql = "INSERT INTO sessions
 
-        (id, token)
+        (user_id, token)
 
         VALUES
 
-        (:id, :token)";
+        (:user_id, :token)";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $response->id);
+        $stmt->bindParam("user_id", $response->id);
         $stmt->bindParam("token", $randomstring);
         $stmt->execute();
         $response->session_token = $randomstring;
@@ -213,11 +214,11 @@ function userJoin() {
     //Insert session token
     $sql = "INSERT INTO sessions
 
-        (id, token)
+        (user_id, token)
 
         VALUES
 
-        (:id, :token)";
+        (:user_id, :token)";
 
     try {
         $db = getConnection();
@@ -242,7 +243,7 @@ function getUser() {
 
     $sql = "SELECT
 
-        id
+        user_id
 
         FROM sessions WHERE token=:token LIMIT 1";
 
@@ -291,7 +292,7 @@ function updateUser() {
 
     $sql = "SELECT
 
-        id
+        user_id
 
         FROM sessions WHERE token=:token LIMIT 1";
 
@@ -360,7 +361,7 @@ function deleteUser() {
 
     $sql = "SELECT
 
-        id
+        user_id
 
         FROM sessions WHERE token=:token LIMIT 1";
 
@@ -386,6 +387,18 @@ function deleteUser() {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("id", $session->id);
+        $stmt->execute();
+        $db = null;
+        echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    $sql = "DELETE FROM sessions WHERE user_id=:user_id";
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("user_id", $session->id);
         $stmt->execute();
         $db = null;
         echo json_encode($user);
