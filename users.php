@@ -254,7 +254,7 @@ function getUser() {
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
-        echo json_encode($user);
+        //echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
