@@ -442,7 +442,7 @@ function getConnection() {
     $dbhost="kondeo.com";
     $dbuser="nudgeit";
     $dbpass="nudgeit";
-    $dbname="nudgedb";
+    $dbname="nudgeit";
     $dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);  
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     return $dbh;
