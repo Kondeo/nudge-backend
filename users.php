@@ -223,7 +223,7 @@ function userJoin() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $newusrid);
+        $stmt->bindParam("user_id", $newusrid);
         $stmt->bindParam("token", $randomstring);
         $stmt->execute();
         $session_token = $randomstring;
@@ -275,7 +275,7 @@ function getUser() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $session->id);
+        $stmt->bindParam("id", $session->user_id);
         $stmt->execute();
         $user = $stmt->fetchObject();
         $db = null;
@@ -332,7 +332,7 @@ function updateUser() {
         $db = getConnection();
         $stmt = $db->prepare($sql);
 
-        $stmt->bindParam("id", $session->id);
+        $stmt->bindParam("id", $session->user_id);
         $stmt->bindParam("username", $user->username);
         $stmt->bindParam("name", $user->name);
         $stmt->bindParam("phone", $user->phone);
@@ -383,7 +383,7 @@ function deleteUser() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $session->id);
+        $stmt->bindParam("id", $session->user_id);
         $stmt->execute();
         $db = null;
         echo json_encode($user);
@@ -395,7 +395,7 @@ function deleteUser() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("user_id", $session->id);
+        $stmt->bindParam("user_id", $session->user_id);
         $stmt->execute();
         $db = null;
         echo json_encode($user);
@@ -407,7 +407,7 @@ function deleteUser() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("host_id", $session->id);
+        $stmt->bindParam("host_id", $session->user_id);
         $stmt->execute();
         $db = null;
         echo json_encode($user);

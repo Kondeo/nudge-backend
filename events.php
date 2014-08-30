@@ -79,7 +79,7 @@ function getUserEvents($id) {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("user_id", $id);
+        $stmt->bindParam("host_id", $id);
         $stmt->execute();
         $usercheck = $stmt->fetchObject();
         $db = null;
@@ -129,7 +129,7 @@ function getMyEvents() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("host_id", $session->id);
+        $stmt->bindParam("host_id", $session->user_id);
         $stmt->execute();
         $myevents = $stmt->fetchObject();
         echo json_encode($myevents);
@@ -178,7 +178,7 @@ function getInvitedEvents() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("user_id", $id);
+        $stmt->bindParam("attendee_id", $session->user_id);
         $stmt->execute();
         $eventinvites = $stmt->fetchObject();
         $db = null;
@@ -247,7 +247,7 @@ function updateEvent($id) {
 
     $sql = "SELECT
 
-        id
+        user_id
 
         FROM sessions WHERE key=:key LIMIT 1";
 
@@ -279,7 +279,7 @@ function updateEvent($id) {
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam("id", $id);
-        $stmt->bindParam("user_id", $session->id);
+        $stmt->bindParam("user_id", $session->user_id);
         
         $stmt->execute();
         $db = null;
@@ -296,7 +296,7 @@ function deleteEvent($id) {
 
     $sql = "SELECT
 
-        id
+        user_id
 
         FROM sessions WHERE key=:key LIMIT 1";
 
@@ -322,7 +322,7 @@ function deleteEvent($id) {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("id", $id);
-        $stmt->bindParam("user_id", $session->id);
+        $stmt->bindParam("host_id", $session->user_id);
         $stmt->execute();
         $db = null;
         echo json_encode($user);
