@@ -89,6 +89,134 @@ function getUserEvents($id) {
     }
 }
 
+function getMyEvents() {
+    $request = Slim::getInstance()->request();
+    $requestjson = json_decode($request->getBody());
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+        //echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    //Check if username exists
+    $sql = "SELECT
+
+        *
+
+        FROM events
+        WHERE host_id=:host_id
+        ORDER BY date
+        LIMIT 200";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("host_id", $session->id);
+        $stmt->execute();
+        $myevents = $stmt->fetchObject();
+        echo json_encode($myevents);
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+}
+
+function getInvitedEvents() {
+    $request = Slim::getInstance()->request();
+    $requestjson = json_decode($request->getBody());
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+        //echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    //Check if username exists
+    $sql = "SELECT
+
+        *
+
+        FROM event_attendees
+        WHERE attendee_id=:attendee_id";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("user_id", $id);
+        $stmt->execute();
+        $eventinvites = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+        exit;
+    }
+
+    $increment = 0;
+    foreach($eventinvites as $invite) {
+
+        $sql = "SELECT
+
+            *
+
+            FROM events
+            WHERE id=:id";
+
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $invite->event_id);
+            $stmt->execute();
+            $eventinvites = $stmt->fetchObject();
+            $db = null;
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+            exit;
+        }
+
+        $invitedevents[$increment] = $eventinvites;
+        $increment = $increment + 1;
+    }
+
+    echo json_encode($invitedevents);
+
+}
+
 function getEvent($id) {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
