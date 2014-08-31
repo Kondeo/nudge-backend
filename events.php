@@ -239,6 +239,39 @@ function getEvent($id) {
     }
 }
 
+function newEvent() {
+    $request = Slim::getInstance()->request();
+    $requestjson = json_decode($request->getBody());
+
+    $sql = "INSERT INTO users
+
+        (host_id, public, name, category,
+            description, start_time, end_time)
+
+        VALUES
+
+        (:host_id, :public, :name, :category,
+            :description, :start_time, :end_time)";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("host_id", $host_id);
+        $stmt->bindParam("public", $name);
+        $stmt->bindParam("name", $name);
+        $stmt->bindParam("category", $category);
+        $stmt->bindParam("description", $description);
+        $stmt->bindParam("start_time", $start_time);
+        $stmt->bindParam("end_time", $end_time);
+        $stmt->execute();
+        //$response = $stmt->fetchObject();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
 function updateEvent($id) {
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
