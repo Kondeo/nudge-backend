@@ -97,7 +97,7 @@ function userLogin() {
 
     //Generate a session token
     $length = 24;
-    $randomstring = openssl_random_pseudo_bytes($length, $strong);
+    $randomstring = bin2hex(openssl_random_pseudo_bytes($length, $strong));
     if(!($strong = true)){
         echo '{"error":{"text":"Did not generate secure random session token"}}';
         exit;
@@ -162,7 +162,7 @@ function userJoin() {
 
     //Generate a salt
     $length = 24;
-    $salt = openssl_random_pseudo_bytes($length);
+    $salt = bin2hex(openssl_random_pseudo_bytes($length));
 
     //Crypt salt and password
     $passwordcrypt = crypt($user->password, $salt);
@@ -204,7 +204,7 @@ function userJoin() {
 
     //Generate a session token
     $length = 24;
-    $randomstring = openssl_random_pseudo_bytes($length, $strong);
+    $randomstring = bin2hex(openssl_random_pseudo_bytes($length, $strong));
     if(!($strong = true)){
         echo '{"error":{"text":"Did not generate secure random session token"}}';
         exit;
@@ -232,7 +232,7 @@ function userJoin() {
         exit;
     }
 
-    echo '{"result":{"session_token":"'. $randomstring .'"}}';
+    echo '{"result":{ "session_token":"'. $randomstring .'"}}';
 }
 
 function getUser() {
