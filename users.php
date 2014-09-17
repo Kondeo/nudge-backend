@@ -53,12 +53,12 @@ function addFriend() {
 
         user_id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->bindParam("token", $requestjson->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -109,12 +109,12 @@ function acceptFriend() {
 
         user_id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->bindParam("token", $requestjson->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -158,6 +158,8 @@ function getFriends() {
     $body = $request->getBody();
     $requestjson = json_decode($body);
 
+    echo $requestjson->session_token;
+
     //Status 1 is requested, not accepted
     //Status 5 is valid and accepted
 
@@ -165,12 +167,12 @@ function getFriends() {
 
         user_id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->bindParam("token", $requestjson->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
