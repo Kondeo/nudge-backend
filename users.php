@@ -28,6 +28,10 @@ $app = new Slim();
 $app->post('/login', 'userLogin');
 $app->post('/join', 'userJoin');
 
+$app->post('/friend/add', 'addFriend');
+$app->post('/friend/accept', 'acceptFriend');
+$app->get('/friend', 'getFriends');
+
 $app->delete('/user', 'deleteUser');
 $app->put('/user', 'updateUser');
 $app->get('/user', 'getUser');
@@ -36,6 +40,324 @@ $app->get('/user/:id', 'getUser');
 //$app->post('/users/search', 'findByParameter');
 
 $app->run();
+
+function addFriend() {
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE key=:key LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    $friend_status = 1;
+
+    $sql = "INSERT INTO user_friends 
+    
+    (fromfriend, tofriend, status)
+    VALUES
+    (:fromfriend, :tofriend, :status)
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("fromfriend", $session->user_id);
+        $stmt->bindParam("tofriend", $requestjson->friend_id);
+        $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+function acceptFriend() {
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE key=:key LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    $friend_status = 1;
+
+    $sql = "UPDATE user_friends 
+    
+    SET status=:status
+
+    WHERE tofriend=:myuserid AND fromfriend=:fromfriend
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("fromfriend", $requestjson->friend_id);
+        $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+function getFriends() {
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE key=:key LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    //-------------------------------------
+
+    //Get current friends
+    $friend_status = 5;
+
+    $sql = "SELECT * FROM user_friends 
+
+    WHERE (tofriend=:myuserid OR fromfriend=:myuserid) AND status=:status
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        $raw_friends_current = $stmt->fetchObject();
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get current friends details
+    $friend_status = 5;
+    i = 0;
+
+    try {
+        $db = getConnection();
+
+        foreach ($raw_friends_current as $current_friend){
+            $sql = "SELECT * FROM users
+
+            WHERE id=:userid1 OR id=:userid2
+
+            ";
+
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("userid1", $current_friend->tofriend);
+            $stmt->bindParam("userid2", $current_friend->fromfriend);
+            
+            $stmt->execute();
+
+            $friends_current[i] = $stmt->fetchObject();
+            i++;
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //------------------------------------
+
+    //Get friend requests to me
+    $friend_status = 1;
+
+    $sql = "SELECT * FROM user_friends 
+
+    WHERE tofriend=:myuserid AND status=:status
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        $raw_friends_requestme = $stmt->fetchObject();
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get friend requests to me details
+    $friend_status = 1;
+    i = 0;
+
+    try {
+        $db = getConnection();
+
+        foreach ($raw_friends_requestme as $requestme_friend){
+            $sql = "SELECT * FROM users
+
+            WHERE id=:userid
+
+            ";
+
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("userid", $requestme_friend->fromfriend);
+            
+            $stmt->execute();
+
+            $friends_requestme[i] = $stmt->fetchObject();
+            i++;
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get pending friend requests to others
+    $friend_status = 1;
+
+    $sql = "SELECT * FROM user_friends 
+
+    WHERE fromfriend=:myuserid AND status=:status
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        $raw_friends_requested = $stmt->fetchObject();
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get pending friend requests to others details
+    $friend_status = 1;
+    i = 0;
+
+    try {
+        $db = getConnection();
+
+        foreach ($raw_friends_requested as $requested_friend){
+            $sql = "SELECT * FROM users
+
+            WHERE id=:userid
+
+            ";
+
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("userid", $requested_friend->tofriend);
+            
+            $stmt->execute();
+
+            $friends_requested[i] = $stmt->fetchObject();
+            i++;
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //-----------------
+    //Echo section
+
+    echo '{"friends":' . json_encode($friends_current) . ', "requested":' . json_encode($friends_requested) . ', "requestme":' . json_encode($friends_requestme) . '}';
+
+    //-----------------
+
+}
 
 function userLogin() {
     $request = Slim::getInstance()->request();
