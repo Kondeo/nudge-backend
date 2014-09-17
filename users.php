@@ -66,7 +66,7 @@ function addFriend() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
@@ -122,7 +122,7 @@ function acceptFriend() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
@@ -158,7 +158,7 @@ function getFriends() {
     $body = $request->getBody();
     $requestjson = json_decode($body);
 
-    echo $requestjson->session_token;
+    //echo $requestjson->session_token;
 
     //Status 1 is requested, not accepted
     //Status 5 is valid and accepted
@@ -180,7 +180,7 @@ function getFriends() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
