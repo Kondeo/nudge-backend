@@ -210,7 +210,7 @@ function getFriends() {
 
     //Get current friends details
     $friend_status = 5;
-    i = 0;
+    $i = 0;
 
     try {
         $db = getConnection();
@@ -229,8 +229,8 @@ function getFriends() {
             
             $stmt->execute();
 
-            $friends_current[i] = $stmt->fetchObject();
-            i++;
+            $friends_current[$i] = $stmt->fetchObject();
+            $i++;
 
         }
 
@@ -267,7 +267,7 @@ function getFriends() {
 
     //Get friend requests to me details
     $friend_status = 1;
-    i = 0;
+    $i = 0;
 
     try {
         $db = getConnection();
@@ -285,8 +285,8 @@ function getFriends() {
             
             $stmt->execute();
 
-            $friends_requestme[i] = $stmt->fetchObject();
-            i++;
+            $friends_requestme[$i] = $stmt->fetchObject();
+            $i++;
 
         }
 
@@ -321,7 +321,7 @@ function getFriends() {
 
     //Get pending friend requests to others details
     $friend_status = 1;
-    i = 0;
+    $i = 0;
 
     try {
         $db = getConnection();
@@ -339,8 +339,8 @@ function getFriends() {
             
             $stmt->execute();
 
-            $friends_requested[i] = $stmt->fetchObject();
-            i++;
+            $friends_requested[$i] = $stmt->fetchObject();
+            $i++;
 
         }
 
