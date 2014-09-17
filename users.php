@@ -30,7 +30,7 @@ $app->post('/join', 'userJoin');
 
 $app->post('/friend/add', 'addFriend');
 $app->post('/friend/accept', 'acceptFriend');
-$app->get('/friend', 'getFriends');
+$app->post('/friend', 'getFriends');
 
 $app->delete('/user', 'deleteUser');
 $app->put('/user', 'updateUser');
