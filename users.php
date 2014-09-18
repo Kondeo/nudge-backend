@@ -217,22 +217,30 @@ function getFriends() {
     try {
         $db = getConnection();
 
-        foreach ($raw_friends_current as $current_friend){
-            $sql = "SELECT * FROM users
+        if (isset($raw_friends_current)) {
 
-            WHERE id=:userid1 OR id=:userid2
+            $runtime = count($raw_friends_current);
+            $runs = 0;
 
-            ";
+            while ($runs < $runtime){
+                $sql = "SELECT * FROM users
 
-            $stmt = $db->prepare($sql);
+                WHERE id=:userid1 OR id=:userid2
 
-            $stmt->bindParam("userid1", $current_friend->tofriend);
-            $stmt->bindParam("userid2", $current_friend->fromfriend);
-            
-            $stmt->execute();
+                ";
 
-            $friends_current[$i] = $stmt->fetchObject();
-            $i++;
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("userid1", $raw_friends_current[$i]->tofriend);
+                $stmt->bindParam("userid2", $raw_friends_current[$i]->fromfriend);
+                
+                $stmt->execute();
+
+                $friends_current[$i] = $stmt->fetchObject();
+                $i++;
+                $runs++;
+
+            }
 
         }
 
@@ -274,21 +282,30 @@ function getFriends() {
     try {
         $db = getConnection();
 
-        foreach ($raw_friends_requestme as $requestme_friend){
-            $sql = "SELECT * FROM users
+        if (isset($raw_friends_requestme)) {
 
-            WHERE id=:userid
+            $runtime = count($raw_friends_requestme);
+            $runs = 0;
 
-            ";
+            while ($runs < $runtime){
 
-            $stmt = $db->prepare($sql);
+                $sql = "SELECT * FROM users
 
-            $stmt->bindParam("userid", $requestme_friend->fromfriend);
-            
-            $stmt->execute();
+                WHERE id=:userid
 
-            $friends_requestme[$i] = $stmt->fetchObject();
-            $i++;
+                ";
+
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("userid", $raw_friends_requestme[$i]->fromfriend);
+                
+                $stmt->execute();
+
+                $friends_requestme[$i] = $stmt->fetchObject();
+                $i++;
+                $runs++;
+
+            }
 
         }
 
@@ -328,21 +345,30 @@ function getFriends() {
     try {
         $db = getConnection();
 
-        foreach ($raw_friends_requested as $requested_friend){
-            $sql = "SELECT * FROM users
+        if (isset($raw_friends_requested)) {
 
-            WHERE id=:userid
+            $runtime = count($raw_friends_requested);
+            $runs = 0;
 
-            ";
+            while ($runs < $runtime){
 
-            $stmt = $db->prepare($sql);
+                $sql = "SELECT * FROM users
 
-            $stmt->bindParam("userid", $requested_friend->tofriend);
-            
-            $stmt->execute();
+                WHERE id=:userid
 
-            $friends_requested[$i] = $stmt->fetchObject();
-            $i++;
+                ";
+
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("userid", $raw_friends_requested[$i]->tofriend);
+                
+                $stmt->execute();
+
+                $friends_requested[$i] = $stmt->fetchObject();
+                $i++;
+                $runs++;
+
+            }
 
         }
 
