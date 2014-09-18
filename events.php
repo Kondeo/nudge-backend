@@ -111,7 +111,7 @@ function getMyEvents() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
@@ -162,7 +162,7 @@ function getInvitedEvents() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
@@ -294,7 +294,7 @@ function updateEvent($id) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
@@ -344,7 +344,7 @@ function deleteEvent($id) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
