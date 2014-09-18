@@ -27,6 +27,7 @@ $app = new Slim();
 
 $app->get('/events', 'getEvents');
 $app->get('/events/user/:id', 'getUserEvents');
+$app->post('/events/me', 'getMyEvents');
 $app->get('/events/:id', 'getEvent');
 $app->post('/events', 'newEvent');
 $app->put('/events/:id', 'updateEvent');
