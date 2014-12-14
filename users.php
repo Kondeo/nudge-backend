@@ -205,7 +205,7 @@ function getFriends() {
         
         $stmt->execute();
         $db = null;
-        $raw_friends_current = $stmt->fetchObject();
+        $raw_friends_current = $stmt->fetchAll();
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -214,15 +214,14 @@ function getFriends() {
     $friend_status = 5;
     $i = 0;
 
+    $friends_current = "";
+
     try {
         $db = getConnection();
 
         if (isset($raw_friends_current)) {
 
-            $runtime = count($raw_friends_current);
-            $runs = 0;
-
-            while ($runs < $runtime){
+            foreach ($raw_friends_current as $raw_friend) {
                 $sql = "SELECT * FROM users
 
                 WHERE id=:userid1 OR id=:userid2
@@ -230,15 +229,15 @@ function getFriends() {
                 ";
 
                 $stmt = $db->prepare($sql);
-
-                $stmt->bindParam("userid1", $raw_friends_current[$i]->tofriend);
-                $stmt->bindParam("userid2", $raw_friends_current[$i]->fromfriend);
+                
+                $stmt->bindParam("userid1", $raw_friend['tofriend']);
+                $stmt->bindParam("userid2", $raw_friend['fromfriend']);
                 
                 $stmt->execute();
 
-                $friends_current[$i] = $stmt->fetchObject();
+                $friends_current = $stmt->fetchAll();
+                
                 $i++;
-                $runs++;
 
             }
 
@@ -249,7 +248,7 @@ function getFriends() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-
+    
     //------------------------------------
 
     //Get friend requests to me
@@ -270,7 +269,7 @@ function getFriends() {
         
         $stmt->execute();
         $db = null;
-        $raw_friends_requestme = $stmt->fetchObject();
+        $raw_friends_requestme = $stmt->fetchAll();
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -279,15 +278,14 @@ function getFriends() {
     $friend_status = 1;
     $i = 0;
 
+    $friends_requestme = "";
+
     try {
         $db = getConnection();
 
         if (isset($raw_friends_requestme)) {
 
-            $runtime = count($raw_friends_requestme);
-            $runs = 0;
-
-            while ($runs < $runtime){
+            foreach ($raw_friends_requestme as $raw_friend) {
 
                 $sql = "SELECT * FROM users
 
@@ -297,13 +295,12 @@ function getFriends() {
 
                 $stmt = $db->prepare($sql);
 
-                $stmt->bindParam("userid", $raw_friends_requestme[$i]->fromfriend);
+                $stmt->bindParam("userid", $raw_friend["fromfriend"]);
                 
                 $stmt->execute();
 
-                $friends_requestme[$i] = $stmt->fetchObject();
+                $friends_requestme = $stmt->fetchAll();
                 $i++;
-                $runs++;
 
             }
 
@@ -333,7 +330,7 @@ function getFriends() {
         
         $stmt->execute();
         $db = null;
-        $raw_friends_requested = $stmt->fetchObject();
+        $raw_friends_requested = $stmt->fetchAll();
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -342,15 +339,14 @@ function getFriends() {
     $friend_status = 1;
     $i = 0;
 
+    $friends_requested = "";
+
     try {
         $db = getConnection();
 
         if (isset($raw_friends_requested)) {
 
-            $runtime = count($raw_friends_requested);
-            $runs = 0;
-
-            while ($runs < $runtime){
+            foreach ($raw_friends_requested as $raw_friend) {
 
                 $sql = "SELECT * FROM users
 
@@ -360,13 +356,12 @@ function getFriends() {
 
                 $stmt = $db->prepare($sql);
 
-                $stmt->bindParam("userid", $raw_friends_requested[$i]->tofriend);
+                $stmt->bindParam("userid", $raw_friend["tofriend"]);
                 
                 $stmt->execute();
 
-                $friends_requested[$i] = $stmt->fetchObject();
+                $friends_requested = $stmt->fetchAll();
                 $i++;
-                $runs++;
 
             }
 
@@ -380,8 +375,10 @@ function getFriends() {
 
     //-----------------
     //Echo section
-
-    echo '{"friends":' . json_encode($friends_current) . ', "requested":' . json_encode($friends_requested) . ', "requestme":' . json_encode($friends_requestme) . '}';
+    $current_clean = utf8ize($friends_current);
+    $requested_clean = utf8ize($friends_requested);
+    $requestme_clean = utf8ize($friends_requestme);
+    echo '{"friends":' . json_encode($current_clean) . ', "requested":' . json_encode($requested_clean) . ', "requestme":' . json_encode($requestme_clean) . '}';
 
     //-----------------
 
@@ -879,6 +876,17 @@ function getConnection() {
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	return $dbh;
+}
+
+function utf8ize($mixed) {
+    if (is_array($mixed)) {
+        foreach ($mixed as $key => $value) {
+            $mixed[$key] = utf8ize($value);
+        }
+    } else if (is_string ($mixed)) {
+        return utf8_encode($mixed);
+    }
+    return $mixed;
 }
 
 ?>
