@@ -235,10 +235,18 @@ function getFriends() {
                 
                 $stmt->execute();
 
-                $friends_current = $stmt->fetchAll();
+                $store = "";
+                $store = $stmt->fetchAll();
                 
-                $i++;
-
+                if($session->user_id != $store[0]['id']){
+                    $friends_current[$i] = $store[0];
+                    
+                    $i++;
+                } else if ($session->user_id != $store[1]['id']){
+                    $friends_current[$i] = $store[1];
+                    
+                    $i++;
+                }
             }
 
         }
@@ -299,8 +307,18 @@ function getFriends() {
                 
                 $stmt->execute();
 
-                $friends_requestme = $stmt->fetchAll();
-                $i++;
+                $store = "";
+                $store = $stmt->fetchAll();
+                
+                if($session->user_id != $store[0]['id']){
+                    $friends_current[$i] = $store[0];
+                    
+                    $i++;
+                } else if ($session->user_id != $store[1]['id']){
+                    $friends_requestme[$i] = $store[1];
+                    
+                    $i++;
+                }
 
             }
 
@@ -360,8 +378,18 @@ function getFriends() {
                 
                 $stmt->execute();
 
-                $friends_requested = $stmt->fetchAll();
-                $i++;
+                $store = "";
+                $store = $stmt->fetchAll();
+                
+                if($session->user_id != $store[0]['id']){
+                    $friends_current[$i] = $store[0];
+                    
+                    $i++;
+                } else if ($session->user_id != $store[1]['id']){
+                    $friends_requested[$i] = $store[1];
+                    
+                    $i++;
+                }
 
             }
 
