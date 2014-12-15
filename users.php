@@ -236,7 +236,7 @@ function getFriends() {
                 $stmt->execute();
 
                 $store = "";
-                $store = $stmt->fetchAll();
+                $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 
                 if($session->user_id != $store[0]['id']){
                     $friends_current[$i] = $store[0];
@@ -277,7 +277,7 @@ function getFriends() {
         
         $stmt->execute();
         $db = null;
-        $raw_friends_requestme = $stmt->fetchAll();
+        $raw_friends_requestme = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -308,7 +308,7 @@ function getFriends() {
                 $stmt->execute();
 
                 $store = "";
-                $store = $stmt->fetchAll();
+                $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 
                 if($session->user_id != $store[0]['id']){
                     $friends_current[$i] = $store[0];
