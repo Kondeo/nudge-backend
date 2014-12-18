@@ -132,7 +132,7 @@ function getMyEvents() {
         $stmt = $db->prepare($sql);
         $stmt->bindParam("host_id", $session->user_id);
         $stmt->execute();
-        $myevents = $stmt->fetchObject();
+        $myevents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($myevents);
         $db = null;
     } catch(PDOException $e) {
