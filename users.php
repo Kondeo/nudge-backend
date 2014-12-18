@@ -897,9 +897,9 @@ function findByParameter() {
 }
 
 function getConnection() {
-	$dbhost="kondeo.com";
-	$dbuser="nudgeit";
-	$dbpass="nudgeit";
+	$dbhost="localhost";
+	$dbuser="root";
+	$dbpass="";
 	$dbname="nudgeit";
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
