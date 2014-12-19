@@ -34,7 +34,6 @@ $app->post('/friend', 'getFriends');
 
 $app->delete('/user', 'deleteUser');
 $app->put('/user', 'updateUser');
-$app->get('/user', 'getUser');
 $app->get('/user/:id', 'getUser');
 //INCOMPLETE:
 //$app->post('/users/search', 'findByParameter');
@@ -610,9 +609,9 @@ function userJoin() {
     echo '{"result":{ "session_token":"'. $randomstring .'"}}';
 }
 
-function getUser() {
+function getUser($id) {
     $request = Slim::getInstance()->request();
-    $user = json_decode($request->getBody());
+    $user = $request->get();
 
     $sql = "SELECT
 
@@ -623,7 +622,7 @@ function getUser() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("token", $user->session_token);
+        $stmt->bindParam("token", $user['session_token']);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -632,23 +631,73 @@ function getUser() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
-    if(!isset($session->id)){
+    if(!isset($session->user_id)){
         echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
         exit;
     }
 
-	$sql = "SELECT
+    if($id == $session->user_id || $id == "me"){
+        $id = $session->user_id;
+        $friend_status = 5;
+    } else {
 
-        username, firstname, lastname, phone, 
-        email, address1, address2, city,
+        $sql = "SELECT status FROM user_friends 
+
+        WHERE ((tofriend=:myuserid OR fromfriend=:myuserid) AND (tofriend=:friendid OR fromfriend=:friendid))
+
+        ";
+
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("myuserid", $session->user_id);
+            $stmt->bindParam("friendid", $id);
+            
+            $stmt->execute();
+            $db = null;
+            $friend_status = $stmt->fetchObject();
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
+    }
+
+    if($friend_status == false){
+        $friend_status = 1;
+    }
+
+    if(is_object($friend_status)){
+        $friend_status = $friend_status->status;
+    }
+
+    if($friend_status == 1){
+
+        $sql = "SELECT
+
+        name, city, state, profile
+
+        FROM users WHERE id=:id";
+
+    } else if($friend_status == 5){
+
+        $sql = "SELECT
+
+        username, name, phone, 
+        address1, address2, city,
         state, zip, profile
 
         FROM users WHERE id=:id";
 
+    } else {
+        echo "FRIENDCHECK ERROR";
+        var_dump($friend_status);
+        break;
+    }
+
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $session->user_id);
+        $stmt->bindParam("id", $id);
         $stmt->execute();
         $user = $stmt->fetchObject();
         $db = null;
