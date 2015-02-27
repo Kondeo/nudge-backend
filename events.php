@@ -472,7 +472,7 @@ function findByParameter() {
 }
 
 function getConnection() {
-    $dbhost="localhost";
+    $dbhost="backend.nudgeit.co";
     $dbuser="root";
     $dbpass="";
     $dbname="nudgeit";
