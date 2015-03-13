@@ -266,7 +266,7 @@ function newEvent() {
         exit;
     }
 
-    $sql = "INSERT INTO users
+    $sql = "INSERT INTO events
 
         (host_id, public, name, category,
             description, start_time, end_time)
