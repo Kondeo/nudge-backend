@@ -1,4 +1,4 @@
-$branch=$1
+branch=$1
 
-git fetch
+git fetch origin
 git checkout $branch
