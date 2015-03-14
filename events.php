@@ -289,7 +289,7 @@ function newEvent() {
         $stmt->bindParam("start_time", $requestjson->start_time);
         $stmt->bindParam("end_time", $requestjson->end_time);
         $stmt->execute();
-        //$response = $stmt->fetchObject();
+        $requestjson->id = $db->lastInsertId();
         $db = null;
         echo json_encode($requestjson);
     } catch(PDOException $e) {
