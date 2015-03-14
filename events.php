@@ -282,7 +282,7 @@ function newEvent() {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("host_id", $session->user_id);
-        $stmt->bindParam("public", $requestjson->$public);
+        $stmt->bindParam("public", $requestjson->public);
         $stmt->bindParam("name", $requestjson->name);
         $stmt->bindParam("category", $requestjson->category);
         $stmt->bindParam("description", $requestjson->description);
