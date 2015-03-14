@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 include 'Slim/Slim.php';
 
+require 'ProtectedDocs/connection.php';
+
 $app = new Slim();
 
 $app->post('/login', 'userLogin');
@@ -943,16 +945,6 @@ function findByParameter() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-}
-
-function getConnection() {
-	$dbhost="localhost";
-	$dbuser="root";
-	$dbpass="<j<}6GxgKRn3?q";
-	$dbname="nudgeit";
-	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
-	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	return $dbh;
 }
 
 function utf8ize($mixed) {
