@@ -846,7 +846,7 @@ function stringSearch() {
     $request = Slim::getInstance()->request();
     $requestparams = json_decode($request->getBody());
 
-    $sql = "SELECT id name city state
+    $sql = "SELECT id, name, city, state
     FROM users
     WHERE
         name LIKE :query OR
