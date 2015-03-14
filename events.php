@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 include 'Slim/Slim.php';
 
+require 'connection.php';
+
 $app = new Slim();
 
 $app->get('/events', 'getEvents');
@@ -470,7 +472,5 @@ function findByParameter() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 }
-
-require 'connection.php';
 
 ?>

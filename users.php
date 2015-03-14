@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 include 'Slim/Slim.php';
 
+require 'connection.php';
+
 $app = new Slim();
 
 $app->post('/login', 'userLogin');
@@ -955,7 +957,5 @@ function utf8ize($mixed) {
     }
     return $mixed;
 }
-
-require 'connection.php';
 
 ?>
