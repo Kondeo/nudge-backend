@@ -8,8 +8,11 @@ if($_GET["git"] == "pull"){
 }else if($_GET["git"] == "clone"){
 	exec("./clone.sh");
 	echo "Cloned master!";
+}else if($_GET["git"] == "checkout" && isset($_GET["name"])){
+	exec("./checkout.sh " . $_GET["name"]);
+	echo "Switched to branch " . $_GET["name"];
 }else{
-	echo "Specify ?git=pull|push";
+	echo "Specify ?git=(pull|push|[checkout&name=BRANCH])";
 }
 
 ?>
