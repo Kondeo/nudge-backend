@@ -246,7 +246,29 @@ function newEvent() {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
 
-    $sql = "INSERT INTO users
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->user_id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    $sql = "INSERT INTO events
 
         (host_id, public, name, category,
             description, start_time, end_time)
@@ -259,15 +281,15 @@ function newEvent() {
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("host_id", $host_id);
-        $stmt->bindParam("public", $name);
-        $stmt->bindParam("name", $name);
-        $stmt->bindParam("category", $category);
-        $stmt->bindParam("description", $description);
-        $stmt->bindParam("start_time", $start_time);
-        $stmt->bindParam("end_time", $end_time);
+        $stmt->bindParam("host_id", $session->user_id);
+        $stmt->bindParam("public", $requestjson->public);
+        $stmt->bindParam("name", $requestjson->name);
+        $stmt->bindParam("category", $requestjson->category);
+        $stmt->bindParam("description", $requestjson->description);
+        $stmt->bindParam("start_time", $requestjson->start_time);
+        $stmt->bindParam("end_time", $requestjson->end_time);
         $stmt->execute();
-        //$response = $stmt->fetchObject();
+        $requestjson->id = $db->lastInsertId();
         $db = null;
         echo json_encode($requestjson);
     } catch(PDOException $e) {
@@ -284,12 +306,12 @@ function updateEvent($id) {
 
         user_id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->bindParam("token", $requestjson->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
@@ -333,12 +355,12 @@ function deleteEvent($id) {
 
         user_id
 
-        FROM sessions WHERE key=:key LIMIT 1";
+        FROM sessions WHERE token=:token LIMIT 1";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam("key", $requestjson->session_token);
+        $stmt->bindParam("token", $requestjson->session_token);
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
