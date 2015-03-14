@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 include 'Slim/Slim.php';
 
-require 'connection.php';
+require 'ProtectedDocs/connection.php';
 
 $app = new Slim();
 
