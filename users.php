@@ -677,7 +677,7 @@ function getUser($id) {
 
     if(is_object($friend_status)){
         $friend_status = $friend_status->status;
-        $friend_status_return = $friend_status->status;
+        $friend_status_return = $friend_status;
     }
 
     if($friend_status == 1){
