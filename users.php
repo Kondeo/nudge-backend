@@ -72,29 +72,57 @@ function addFriend() {
         exit;
     }
 
-    $friend_status = 1;
+    if($requestjson->friend_id == $session->user_id || $requestjson->friend_id == "me"){
+        $requestjson->friend_id = $session->user_id;
+        $friend_status = 5;
+    } else {
 
-    $sql = "INSERT INTO user_friends 
+        $sql = "SELECT status FROM user_friends 
+
+        WHERE ((tofriend=:myuserid OR fromfriend=:myuserid) AND (tofriend=:friendid OR fromfriend=:friendid))
+
+        ";
+
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("myuserid", $session->user_id);
+            $stmt->bindParam("friendid", $requestjson->friend_id);
+            
+            $stmt->execute();
+            $db = null;
+            $friend_status = $stmt->fetchObject();
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
+    }
+
+    if($friend_status == false){
+        $friend_status = 1;
+
+        $sql = "INSERT INTO user_friends 
     
-    (fromfriend, tofriend, status)
-    VALUES
-    (:fromfriend, :tofriend, :status)
+        (fromfriend, tofriend, status)
+        VALUES
+        (:fromfriend, :tofriend, :status)
 
-    ";
+        ";
 
-    try {
-        $db = getConnection();
-        $stmt = $db->prepare($sql);
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
 
-        $stmt->bindParam("fromfriend", $session->user_id);
-        $stmt->bindParam("tofriend", $requestjson->friend_id);
-        $stmt->bindParam("status", $friend_status);
-        
-        $stmt->execute();
-        $db = null;
-        echo json_encode($requestjson);
-    } catch(PDOException $e) {
-        echo '{"error":{"text":'. $e->getMessage() .'}}';
+            $stmt->bindParam("fromfriend", $session->user_id);
+            $stmt->bindParam("tofriend", $requestjson->friend_id);
+            $stmt->bindParam("status", $friend_status);
+            
+            $stmt->execute();
+            $db = null;
+            echo json_encode($requestjson);
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
     }
 }
 
