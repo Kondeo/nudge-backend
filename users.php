@@ -849,10 +849,10 @@ function stringSearch() {
     $sql = "SELECT id, name, city, state
     FROM users
     WHERE
-        name LIKE :query OR
-        username LIKE :query OR
-        phone LIKE :query OR
-        address1 LIKE :query 
+        name LIKE CONCAT('%', :query, '%') OR
+        username LIKE CONCAT('%', :query, '%') OR
+        phone LIKE CONCAT('%', :query, '%') OR
+        address1 LIKE CONCAT('%', :query, '%') 
     ORDER BY name
     LIMIT 200";
     
