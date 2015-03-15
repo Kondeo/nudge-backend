@@ -703,6 +703,7 @@ function getUser($id) {
         $stmt->execute();
         $user = $stmt->fetchObject();
         $db = null;
+        $user->friend_status = $friend_status;
         echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
