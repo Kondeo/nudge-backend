@@ -664,12 +664,20 @@ function getUser($id) {
         }
     }
 
+    //Friend status is for what info to get
+    //Friend status return is what relationship
+    //The user actually has
+
+    $friend_status_return = $friend_status;
+
     if($friend_status == false){
         $friend_status = 1;
+        $friend_status_return = 0;
     }
 
     if(is_object($friend_status)){
         $friend_status = $friend_status->status;
+        $friend_status_return = $friend_status->status;
     }
 
     if($friend_status == 1){
@@ -703,7 +711,7 @@ function getUser($id) {
         $stmt->execute();
         $user = $stmt->fetchObject();
         $db = null;
-        $user->friend_status = $friend_status;
+        $user->friend_status = $friend_status_return;
         echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
