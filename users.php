@@ -312,7 +312,7 @@ function getFriends() {
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 
                 if($session->user_id != $store[0]['id']){
-                    $friends_current[$i] = $store[0];
+                    $friends_requestme[$i] = $store[0];
                     
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
@@ -383,7 +383,7 @@ function getFriends() {
                 $store = $stmt->fetchAll();
                 
                 if($session->user_id != $store[0]['id']){
-                    $friends_current[$i] = $store[0];
+                    $friends_requested[$i] = $store[0];
                     
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
