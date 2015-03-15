@@ -123,6 +123,8 @@ function addFriend() {
         } catch(PDOException $e) {
             echo '{"error":{"text":'. $e->getMessage() .'}}';
         }
+    } else {
+        echo '{"error":{"text":"Friend already added","errorid":"233"}}';
     }
 }
 
