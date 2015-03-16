@@ -770,10 +770,10 @@ function getUser($id) {
             } catch(PDOException $e) {
                 echo '{"error":{"text":'. $e->getMessage() .'}}';
             }
-            if($friend_status->status == "1"){
-                $friend_status_return = "2";
-            } else if($friend_status == false) {
+            if($friend_status == false){
                 $friend_status_return = "0";
+            } else if($friend_status->status == "1") {
+                $friend_status_return = "2";
             } else {
                 $friend_status_return = $friend_status->status;
             }
