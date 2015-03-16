@@ -694,7 +694,7 @@ function getUser($id) {
         }
 
         if($friend_status != false){
-            $friend_status_return = $friend_status;
+            $friend_status_return = $friend_status->status;
         }
 
         //If current user didnt request friendship, check if vice versa
@@ -718,12 +718,12 @@ function getUser($id) {
             } catch(PDOException $e) {
                 echo '{"error":{"text":'. $e->getMessage() .'}}';
             }
-            if($friend_status == "1"){
+            if($friend_status->status == "1"){
                 $friend_status_return = "2";
             } else if($friend_status == false) {
                 $friend_status_return = "0";
             } else {
-                $friend_status_return = $friend_status;
+                $friend_status_return = $friend_status->status;
             }
         }
     }
