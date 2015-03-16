@@ -32,6 +32,7 @@ $app->post('/join', 'userJoin');
 
 $app->post('/friend/add', 'addFriend');
 $app->post('/friend/accept', 'acceptFriend');
+$app->post('/friend/decline', 'declineFriend');
 $app->post('/friend', 'getFriends');
 
 $app->delete('/user', 'deleteUser');
@@ -175,6 +176,57 @@ function acceptFriend() {
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("fromfriend", $requestjson->friend_id);
         $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+function declineFriend() {
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->user_id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    $sql = "DELETE FROM user_friends 
+
+    WHERE tofriend=:myuserid AND fromfriend=:fromfriend
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("fromfriend", $requestjson->friend_id);
         
         $stmt->execute();
         $db = null;
