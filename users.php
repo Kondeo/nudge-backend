@@ -675,7 +675,7 @@ function getUser($id) {
 
         $sql = "SELECT status FROM user_friends 
 
-        WHERE ((tofriend=:myuserid OR fromfriend=:myuserid) AND (tofriend=:friendid OR fromfriend=:friendid))
+        WHERE (fromfriend=:myuserid AND tofriend=:friendid)
 
         ";
 
@@ -692,22 +692,53 @@ function getUser($id) {
         } catch(PDOException $e) {
             echo '{"error":{"text":'. $e->getMessage() .'}}';
         }
+
+        if($friend_status != false){
+            $friend_status_return = $friend_status;
+        }
+
+        //If current user didnt request friendship, check if vice versa
+        if($friend_status == false){
+            $sql = "SELECT status FROM user_friends 
+
+            WHERE (tofriend=:myuserid AND fromfriend=:friendid)
+
+            ";
+
+            try {
+                $db = getConnection();
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("myuserid", $session->user_id);
+                $stmt->bindParam("friendid", $id);
+                
+                $stmt->execute();
+                $db = null;
+                $friend_status = $stmt->fetchObject();
+            } catch(PDOException $e) {
+                echo '{"error":{"text":'. $e->getMessage() .'}}';
+            }
+            if($friend_status == "1"){
+                $friend_status_return = "2";
+            } else if($friend_status == false) {
+                $friend_status_return = "0";
+            } else {
+                $friend_status_return = $friend_status
+            }
+        }
     }
 
     //Friend status is for what info to get
     //Friend status return is what relationship
-    //The user actually has
-
-    $friend_status_return = $friend_status;
+    //The user actually has. 0 = none 1 = requested 2 = requestme 5 = friends
 
     if($friend_status == false){
         $friend_status = 1;
-        $friend_status_return = "0";
     }
 
     if(is_object($friend_status)){
         $friend_status = $friend_status->status;
-        $friend_status_return = $friend_status;
+        //$friend_status_return = $friend_status;
     }
 
     if($friend_status == 1){
