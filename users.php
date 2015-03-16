@@ -158,7 +158,7 @@ function acceptFriend() {
         exit;
     }
 
-    $friend_status = 1;
+    $friend_status = 5;
 
     $sql = "UPDATE user_friends 
     
