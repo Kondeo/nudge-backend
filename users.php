@@ -723,7 +723,7 @@ function getUser($id) {
             } else if($friend_status == false) {
                 $friend_status_return = "0";
             } else {
-                $friend_status_return = $friend_status
+                $friend_status_return = $friend_status;
             }
         }
     }
