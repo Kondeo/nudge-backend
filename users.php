@@ -37,8 +37,10 @@ $app->post('/friend', 'getFriends');
 $app->delete('/user', 'deleteUser');
 $app->put('/user', 'updateUser');
 $app->get('/user/:id', 'getUser');
+
+$app->post('/users/string', 'stringSearch');
 //INCOMPLETE:
-//$app->post('/users/search', 'findByParameter');
+//$app->post('/users/parameter', 'findByParameter');
 
 $app->run();
 
@@ -835,6 +837,35 @@ function deleteUser() {
         $stmt->execute();
         $db = null;
         echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+function stringSearch() {
+    $request = Slim::getInstance()->request();
+    $requestparams = json_decode($request->getBody());
+
+    $sql = "SELECT id, name, city, state
+    FROM users
+    WHERE
+        name LIKE CONCAT('%', :query, '%') OR
+        username LIKE CONCAT('%', :query, '%') OR
+        phone LIKE CONCAT('%', :query, '%') OR
+        address1 LIKE CONCAT('%', :query, '%') 
+    ORDER BY name
+    LIMIT 200";
+    
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        
+        $stmt->bindParam("query", $requestparams->query);
+
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $db = null;
+        echo '{"result": ' . json_encode($results) . '}';
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
