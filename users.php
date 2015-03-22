@@ -32,6 +32,7 @@ $app->post('/join', 'userJoin');
 
 $app->post('/friend/add', 'addFriend');
 $app->post('/friend/accept', 'acceptFriend');
+$app->post('/friend/decline', 'declineFriend');
 $app->post('/friend', 'getFriends');
 
 $app->delete('/user', 'deleteUser');
@@ -74,29 +75,59 @@ function addFriend() {
         exit;
     }
 
-    $friend_status = 1;
+    if($requestjson->friend_id == $session->user_id || $requestjson->friend_id == "me"){
+        $requestjson->friend_id = $session->user_id;
+        $friend_status = 5;
+    } else {
 
-    $sql = "INSERT INTO user_friends 
+        $sql = "SELECT status FROM user_friends 
+
+        WHERE ((tofriend=:myuserid OR fromfriend=:myuserid) AND (tofriend=:friendid OR fromfriend=:friendid))
+
+        ";
+
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("myuserid", $session->user_id);
+            $stmt->bindParam("friendid", $requestjson->friend_id);
+            
+            $stmt->execute();
+            $db = null;
+            $friend_status = $stmt->fetchObject();
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
+    }
+
+    if($friend_status == false){
+        $friend_status = 1;
+
+        $sql = "INSERT INTO user_friends 
     
-    (fromfriend, tofriend, status)
-    VALUES
-    (:fromfriend, :tofriend, :status)
+        (fromfriend, tofriend, status)
+        VALUES
+        (:fromfriend, :tofriend, :status)
 
-    ";
+        ";
 
-    try {
-        $db = getConnection();
-        $stmt = $db->prepare($sql);
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
 
-        $stmt->bindParam("fromfriend", $session->user_id);
-        $stmt->bindParam("tofriend", $requestjson->friend_id);
-        $stmt->bindParam("status", $friend_status);
-        
-        $stmt->execute();
-        $db = null;
-        echo json_encode($requestjson);
-    } catch(PDOException $e) {
-        echo '{"error":{"text":'. $e->getMessage() .'}}';
+            $stmt->bindParam("fromfriend", $session->user_id);
+            $stmt->bindParam("tofriend", $requestjson->friend_id);
+            $stmt->bindParam("status", $friend_status);
+            
+            $stmt->execute();
+            $db = null;
+            echo json_encode($requestjson);
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
+    } else {
+        echo '{"error":{"text":"Friend already added","errorid":"233"}}';
     }
 }
 
@@ -130,7 +161,7 @@ function acceptFriend() {
         exit;
     }
 
-    $friend_status = 1;
+    $friend_status = 5;
 
     $sql = "UPDATE user_friends 
     
@@ -147,6 +178,57 @@ function acceptFriend() {
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("fromfriend", $requestjson->friend_id);
         $stmt->bindParam("status", $friend_status);
+        
+        $stmt->execute();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+function declineFriend() {
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->user_id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    $sql = "DELETE FROM user_friends 
+
+    WHERE tofriend=:myuserid AND fromfriend=:fromfriend
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("fromfriend", $requestjson->friend_id);
         
         $stmt->execute();
         $db = null;
@@ -314,7 +396,7 @@ function getFriends() {
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 
                 if($session->user_id != $store[0]['id']){
-                    $friends_current[$i] = $store[0];
+                    $friends_requestme[$i] = $store[0];
                     
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
@@ -385,7 +467,7 @@ function getFriends() {
                 $store = $stmt->fetchAll();
                 
                 if($session->user_id != $store[0]['id']){
-                    $friends_current[$i] = $store[0];
+                    $friends_requested[$i] = $store[0];
                     
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
@@ -647,7 +729,7 @@ function getUser($id) {
 
         $sql = "SELECT status FROM user_friends 
 
-        WHERE ((tofriend=:myuserid OR fromfriend=:myuserid) AND (tofriend=:friendid OR fromfriend=:friendid))
+        WHERE (fromfriend=:myuserid AND tofriend=:friendid)
 
         ";
 
@@ -664,7 +746,45 @@ function getUser($id) {
         } catch(PDOException $e) {
             echo '{"error":{"text":'. $e->getMessage() .'}}';
         }
+
+        if($friend_status != false){
+            $friend_status_return = $friend_status->status;
+        }
+
+        //If current user didnt request friendship, check if vice versa
+        if($friend_status == false){
+            $sql = "SELECT status FROM user_friends 
+
+            WHERE (tofriend=:myuserid AND fromfriend=:friendid)
+
+            ";
+
+            try {
+                $db = getConnection();
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("myuserid", $session->user_id);
+                $stmt->bindParam("friendid", $id);
+                
+                $stmt->execute();
+                $db = null;
+                $friend_status = $stmt->fetchObject();
+            } catch(PDOException $e) {
+                echo '{"error":{"text":'. $e->getMessage() .'}}';
+            }
+            if($friend_status == false){
+                $friend_status_return = "0";
+            } else if($friend_status->status == "1") {
+                $friend_status_return = "2";
+            } else {
+                $friend_status_return = $friend_status->status;
+            }
+        }
     }
+
+    //Friend status is for what info to get
+    //Friend status return is what relationship
+    //The user actually has. 0 = none 1 = requested 2 = requestme 5 = friends
 
     if($friend_status == false){
         $friend_status = 1;
@@ -672,6 +792,7 @@ function getUser($id) {
 
     if(is_object($friend_status)){
         $friend_status = $friend_status->status;
+        //$friend_status_return = $friend_status;
     }
 
     if($friend_status == 1){
@@ -705,6 +826,7 @@ function getUser($id) {
         $stmt->execute();
         $user = $stmt->fetchObject();
         $db = null;
+        $user->friend_status = $friend_status_return;
         echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
