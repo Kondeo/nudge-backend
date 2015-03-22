@@ -407,6 +407,244 @@ function cancelRSVP(){
 }
 
 function getRSVPs(){
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 2 is invited, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->user_id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    //-------------------------------------
+
+    //Get current events
+    $rsvp_status = 5;
+
+    $sql = "SELECT * FROM event_attendees 
+
+    WHERE attendee_id=:myuserid AND status=:status
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $rsvp_status);
+        
+        $stmt->execute();
+        $db = null;
+        $raw_rsvp_current = $stmt->fetchAll();
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get current event details
+    $rsvp_status = 5;
+    $i = 0;
+
+    $rsvp_current = "";
+
+    try {
+        $db = getConnection();
+
+        if (isset($raw_rsvp_current)) {
+
+            foreach ($raw_rsvp_current as $raw_rsvp) {
+                $sql = "SELECT * FROM events
+
+                WHERE id=:eventid
+
+                ";
+
+                $stmt = $db->prepare($sql);
+                
+                $stmt->bindParam("eventid", $raw_rsvp["event_id"]);                
+                
+                $stmt->execute();
+
+                $store = "";
+                $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $rsvp_current[$i] = $store;
+                
+                $i++;
+            }
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+    
+    //------------------------------------
+
+    //Get my current pending rsvp requests
+    $rsvp_status = 1;
+
+    $sql = "SELECT * FROM event_attendees 
+
+    WHERE attendee_id=:myuserid AND status=:status
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $rsvp_status);
+        
+        $stmt->execute();
+        $db = null;
+        $raw_rsvp_sent = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get sent event rsvp details
+    $rsvp_status = 1;
+    $i = 0;
+
+    $rsvp_sent = "";
+
+    try {
+        $db = getConnection();
+
+        if (isset($raw_rsvp_sent)) {
+
+            foreach ($raw_rsvp_sent as $raw_rsvp) {
+
+                $sql = "SELECT * FROM events
+
+                WHERE id=:eventid
+
+                ";
+
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("eventid", $raw_rsvp["event_id"]);
+                
+                $stmt->execute();
+
+                $store = "";
+                $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+                $rsvp_sent[$i] = $store;
+                
+                $i++;
+
+            }
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //------------------
+
+    //Get rsvp invites from event hosts
+    $rsvp_status = 2;
+
+    $sql = "SELECT * FROM event_attendees 
+
+    WHERE attendee_id=:myuserid AND status=:status
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $rsvp_status);
+        
+        $stmt->execute();
+        $db = null;
+        $raw_rsvp_invited = $stmt->fetchAll();
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //Get pending friend requests to others details
+    $rsvp_status = 2;
+    $i = 0;
+
+    $rsvp_invited = "";
+
+    try {
+        $db = getConnection();
+
+        if (isset($raw_rsvp_invited)) {
+
+            foreach ($raw_rsvp_invited as $raw_rsvp) {
+
+                $sql = "SELECT * FROM events
+
+                WHERE id=:eventid
+
+                ";
+
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("eventid", $raw_rsvp["event_id"]);
+                
+                $stmt->execute();
+
+                $store = "";
+                $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $rsvp_invited[$i] = $store;
+                
+                $i++;
+
+            }
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    //-----------------
+    //Echo section
+    $current_clean = utf8ize($rsvp_current);
+    $sent_clean = utf8ize($rsvp_sent);
+    $invited_clean = utf8ize($rsvp_invited);
+    echo '{"current":' . json_encode($current_clean) . ', "sent":' . json_encode($sent_clean) . ', "invited":' . json_encode($invited_clean) . '}';
+
+    //-----------------
+
 }
 
 function findByParameter() {
@@ -514,6 +752,17 @@ function findByParameter() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
+}
+
+function utf8ize($mixed) {
+    if (is_array($mixed)) {
+        foreach ($mixed as $key => $value) {
+            $mixed[$key] = utf8ize($value);
+        }
+    } else if (is_string ($mixed)) {
+        return utf8_encode($mixed);
+    }
+    return $mixed;
 }
 
 ?>
