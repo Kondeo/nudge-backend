@@ -35,6 +35,12 @@ $app->post('/events', 'newEvent');
 $app->put('/events/:id', 'updateEvent');
 $app->delete('/events/:id', 'deleteEvent');
 
+$app->post('/events/rsvp/request', 'requestRSVP');
+$app->post('/events/rsvp/invite', 'inviteRSVP');
+$app->post('/events/rsvp/accept', 'acceptRSVP');
+$app->post('/events/rsvp/cancel', 'cancelRSVP');
+$app->post('/events/rsvp', 'getRSVPs');
+
 $app->run();
 
 function getEvents() {
@@ -386,6 +392,21 @@ function deleteEvent($id) {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
+}
+
+function requestRSVP(){
+}
+
+function inviteRSVP(){
+}
+
+function acceptRSVP(){
+}
+
+function cancelRSVP(){
+}
+
+function getRSVPs(){
 }
 
 function findByParameter() {
