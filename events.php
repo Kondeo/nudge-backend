@@ -227,7 +227,30 @@ function getInvitedEvents() {
 
 function getEvent($id) {
     $request = Slim::getInstance()->request();
-    $requestjson = json_decode($request->getBody());
+    $session_token = $request->params('session_token');
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+        //echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->user_id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
 
     $sql = "SELECT
 
@@ -242,10 +265,84 @@ function getEvent($id) {
         $stmt->execute();
         $response = $stmt->fetchObject();
         $db = null;
-        echo json_encode($response);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
+
+    if($id == $response->host_id){
+        $rsvp_status = 6;
+    } else {
+
+        $sql = "SELECT status FROM event_attendees 
+
+        WHERE event_id=:event_id AND attendee_id=:myuserid
+
+        ";
+
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("myuserid", $session->user_id);
+            $stmt->bindParam("event_id", $id);
+            
+            $stmt->execute();
+            $db = null;
+            $rsvp_status = $stmt->fetchObject();
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
+
+    }
+
+    //Friend status is for what info to get
+    //Friend status return is what relationship
+    //The user actually has. 0 = none 1 = requested 2 = requestme 5 = friends
+
+    if($rsvp_status == false){
+        $rsvp_status = "0";
+    }
+
+    if(is_object($rsvp_status)){
+        $rsvp_status = $rsvp_status->status;
+        //$friend_status_return = $friend_status;
+    }
+
+    if($rsvp_status == 0 || $rsvp_status == 1){
+
+        $sql = "SELECT
+
+        *
+
+        FROM events WHERE id=:event_id";
+
+    } else if($rsvp_status == 2 || $rsvp_status == 5 || $rsvp_status == 6){
+
+        $sql = "SELECT
+
+        *
+
+        FROM events WHERE id=:event_id";
+
+    } else {
+        echo "RSVPCHECK ERROR";
+        var_dump($rsvp_status);
+        break;
+    }
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("event_id", $id);
+        $stmt->execute();
+        $user = $stmt->fetchObject();
+        $db = null;
+        $user->status = $rsvp_status;
+        echo json_encode($user);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
 }
 
 function newEvent() {
