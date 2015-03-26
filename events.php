@@ -43,6 +43,7 @@ $app->post('/events/rsvp', 'getRSVPs');
 
 $app->run();
 
+//Get all events
 function getEvents() {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
@@ -71,11 +72,11 @@ function getEvents() {
     }
 }
 
+//Get events hosted by a specific user id: $id
 function getUserEvents($id) {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
 
-    //Check if username exists
     $sql = "SELECT
 
         *
@@ -98,6 +99,7 @@ function getUserEvents($id) {
     }
 }
 
+//Get all events that are hosted by the current user's id
 function getMyEvents() {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
@@ -115,7 +117,6 @@ function getMyEvents() {
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
-        //echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -125,7 +126,6 @@ function getMyEvents() {
         exit;
     }
 
-    //Check if username exists
     $sql = "SELECT
 
         *
@@ -149,6 +149,7 @@ function getMyEvents() {
     }
 }
 
+//Get all events the user was invited to
 function getInvitedEvents() {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
@@ -166,7 +167,6 @@ function getInvitedEvents() {
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
-        //echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -176,7 +176,6 @@ function getInvitedEvents() {
         exit;
     }
 
-    //Check if username exists
     $sql = "SELECT
 
         *
@@ -225,6 +224,7 @@ function getInvitedEvents() {
     echo json_encode($invitedevents);
 }
 
+//Get a particular events details based on an event id: $id
 function getEvent($id) {
     $request = Slim::getInstance()->request();
     $session_token = $request->params('session_token');
@@ -242,7 +242,6 @@ function getEvent($id) {
         $stmt->execute();
         $session = $stmt->fetchObject();
         $db = null;
-        //echo json_encode($user);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -345,6 +344,7 @@ function getEvent($id) {
 
 }
 
+//Create a new event
 function newEvent() {
     $request = Slim::getInstance()->request();
     $requestjson = json_decode($request->getBody());
@@ -400,6 +400,7 @@ function newEvent() {
     }
 }
 
+//Update an existing event
 function updateEvent($id) {
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
@@ -449,6 +450,7 @@ function updateEvent($id) {
     }
 }
 
+//Delete an existing event
 function deleteEvent($id) {
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
@@ -491,6 +493,7 @@ function deleteEvent($id) {
     }
 }
 
+//Request to RSVP to an event
 function requestRSVP(){
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
@@ -569,15 +572,19 @@ function requestRSVP(){
     }
 }
 
+//Invite a user to an event
 function inviteRSVP(){
 }
 
+//Accept an invitation or a request
 function acceptRSVP(){
 }
 
+//Cancel an rsvp
 function cancelRSVP(){
 }
 
+//Get all current pending rsvps
 function getRSVPs(){
     $request = Slim::getInstance()->request();
     $body = $request->getBody();
@@ -819,6 +826,7 @@ function getRSVPs(){
 
 }
 
+//Currently incomplete
 function findByParameter() {
 
     //INCOMPLETE FUNCTION
