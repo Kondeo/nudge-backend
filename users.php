@@ -993,7 +993,8 @@ function stringSearch() {
     }
 }
 
-function findByParameter() {
+//Incomplete
+/* function findByParameter() {
 
     //INCOMPLETE FUNCTION
 
@@ -1098,7 +1099,7 @@ function findByParameter() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-}
+} */
 
 function utf8ize($mixed) {
     if (is_array($mixed)) {
