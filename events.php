@@ -11,7 +11,7 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");         
 
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
         header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-
+   
 
 include 'Slim/Slim.php';
 
@@ -272,7 +272,7 @@ function getEvent($id) {
         $rsvp_status = 6;
     } else {
 
-        $sql = "SELECT status FROM event_attendees
+        $sql = "SELECT status FROM event_attendees 
 
         WHERE event_id=:event_id AND attendee_id=:myuserid
 
@@ -284,7 +284,7 @@ function getEvent($id) {
 
             $stmt->bindParam("myuserid", $session->user_id);
             $stmt->bindParam("event_id", $id);
-
+            
             $stmt->execute();
             $db = null;
             $rsvp_status = $stmt->fetchObject();
@@ -399,7 +399,7 @@ function newEvent() {
 
     $rsvp_status = 6;
 
-    $sql = "INSERT INTO event_attendees
+    $sql = "INSERT INTO event_attendees 
 
     (event_id, attendee_id, status)
     VALUES
@@ -410,10 +410,10 @@ function newEvent() {
     try {
         $stmt = $db->prepare($sql);
 
-        $stmt->bindParam("event_id", "121312312");
+        $stmt->bindParam("event_id", $requestjson->id);
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $rsvp_status);
-
+        
         $stmt->execute();
         $db = null;
         echo json_encode($requestjson);
@@ -450,9 +450,9 @@ function updateEvent($id) {
         exit;
     }
 
-    $sql = "UPDATE events
-    SET
-
+    $sql = "UPDATE events 
+    SET 
+    
     this=:this
 
     WHERE id=:id AND user_id=:user_id";
@@ -463,7 +463,7 @@ function updateEvent($id) {
 
         $stmt->bindParam("id", $id);
         $stmt->bindParam("user_id", $session->user_id);
-
+        
         $stmt->execute();
         $db = null;
         echo json_encode($requestjson);
@@ -543,7 +543,7 @@ function requestRSVP(){
         exit;
     }
 
-    $sql = "SELECT status FROM event_attendees
+    $sql = "SELECT status FROM event_attendees 
 
     WHERE attendee_id=:myuserid AND event_id=:event_id
 
@@ -555,7 +555,7 @@ function requestRSVP(){
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("event_id", $requestjson->event_id);
-
+        
         $stmt->execute();
         $db = null;
         $rsvp_status = $stmt->fetchObject();
@@ -567,8 +567,8 @@ function requestRSVP(){
     if($rsvp_status == false){
         $rsvp_status = 1;
 
-        $sql = "INSERT INTO event_attendees
-
+        $sql = "INSERT INTO event_attendees 
+    
         (event_id, attendee_id, status)
         VALUES
         (:event_id, :myuserid, :status)
@@ -582,7 +582,7 @@ function requestRSVP(){
             $stmt->bindParam("event_id", $requestjson->event_id);
             $stmt->bindParam("myuserid", $session->user_id);
             $stmt->bindParam("status", $rsvp_status);
-
+            
             $stmt->execute();
             $db = null;
             echo json_encode($requestjson);
@@ -643,7 +643,7 @@ function getRSVPs(){
     //Get current events
     $rsvp_status = 5;
 
-    $sql = "SELECT * FROM event_attendees
+    $sql = "SELECT * FROM event_attendees 
 
     WHERE attendee_id=:myuserid AND status=:status
 
@@ -655,7 +655,7 @@ function getRSVPs(){
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $rsvp_status);
-
+        
         $stmt->execute();
         $db = null;
         $raw_rsvp_current = $stmt->fetchAll();
@@ -682,16 +682,16 @@ function getRSVPs(){
                 ";
 
                 $stmt = $db->prepare($sql);
-
-                $stmt->bindParam("eventid", $raw_rsvp["event_id"]);
-
+                
+                $stmt->bindParam("eventid", $raw_rsvp["event_id"]);                
+                
                 $stmt->execute();
 
                 $store = "";
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+                
                 $rsvp_current[$i] = $store;
-
+                
                 $i++;
             }
 
@@ -702,13 +702,13 @@ function getRSVPs(){
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-
+    
     //------------------------------------
 
     //Get my current pending rsvp requests
     $rsvp_status = 1;
 
-    $sql = "SELECT * FROM event_attendees
+    $sql = "SELECT * FROM event_attendees 
 
     WHERE attendee_id=:myuserid AND status=:status
 
@@ -720,7 +720,7 @@ function getRSVPs(){
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $rsvp_status);
-
+        
         $stmt->execute();
         $db = null;
         $raw_rsvp_sent = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -750,14 +750,14 @@ function getRSVPs(){
                 $stmt = $db->prepare($sql);
 
                 $stmt->bindParam("eventid", $raw_rsvp["event_id"]);
-
+                
                 $stmt->execute();
 
                 $store = "";
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+            
                 $rsvp_sent[$i] = $store;
-
+                
                 $i++;
 
             }
@@ -775,7 +775,7 @@ function getRSVPs(){
     //Get rsvp invites from event hosts
     $rsvp_status = 2;
 
-    $sql = "SELECT * FROM event_attendees
+    $sql = "SELECT * FROM event_attendees 
 
     WHERE attendee_id=:myuserid AND status=:status
 
@@ -787,7 +787,7 @@ function getRSVPs(){
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $rsvp_status);
-
+        
         $stmt->execute();
         $db = null;
         $raw_rsvp_invited = $stmt->fetchAll();
@@ -817,14 +817,14 @@ function getRSVPs(){
                 $stmt = $db->prepare($sql);
 
                 $stmt->bindParam("eventid", $raw_rsvp["event_id"]);
-
+                
                 $stmt->execute();
 
                 $store = "";
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+                
                 $rsvp_invited[$i] = $store;
-
+                
                 $i++;
 
             }
@@ -928,17 +928,17 @@ function getRSVPs(){
         Address1 LIKE :address1 AND
         Email LIKE :email1 AND
         HomePhone LIKE :phone1 AND
-        City LIKE :city
+        City LIKE :city 
     ORDER BY LastName
     LIMIT 200";
+    
 
-
-
+    
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         //$query = "%".$query."%";
-
+        
         $stmt->bindParam("firstname", $FirstName);
         $stmt->bindParam("lastname", $LastName);
         $stmt->bindParam("company", $Company);
