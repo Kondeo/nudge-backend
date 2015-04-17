@@ -399,15 +399,17 @@ function newEvent() {
 
     $rsvp_status = 6;
 
-    $sql = "INSERT INTO event_attendees 
+    
+
+    try {
+        $sql = "INSERT INTO event_attendees 
 
     (event_id, attendee_id, status)
     VALUES
     (:event_id, :myuserid, :status)
 
     ";
-
-    try {
+        
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam("event_id", $requestjson->id);
