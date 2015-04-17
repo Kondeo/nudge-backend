@@ -596,6 +596,102 @@ function requestRSVP(){
 
 //Invite a user to an event
 function inviteRSVP(){
+  $request = Slim::getInstance()->request();
+  $body = $request->getBody();
+  $requestjson = json_decode($body);
+
+  $sql = "SELECT
+
+      user_id
+
+      FROM sessions WHERE token=:token LIMIT 1";
+
+  try {
+      $db = getConnection();
+      $stmt = $db->prepare($sql);
+      $stmt->bindParam("token", $requestjson->session_token);
+      $stmt->execute();
+      $session = $stmt->fetchObject();
+      $db = null;
+  } catch(PDOException $e) {
+      echo '{"error":{"text":'. $e->getMessage() .'}}';
+  }
+
+  if(!isset($session->user_id)){
+      echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+      exit;
+  }
+
+  $sql = "SELECT status FROM event_attendees
+
+  WHERE attendee_id=:myuserid AND event_id=:event_id
+
+  ";
+
+  try {
+      $db = getConnection();
+      $stmt = $db->prepare($sql);
+
+      $stmt->bindParam("friendid", $session->user_id);
+      $stmt->bindParam("event_id", $requestjson->event_id);
+
+      $stmt->execute();
+      $db = null;
+      $rsvp_status = $stmt->fetchObject();
+  } catch(PDOException $e) {
+      echo '{"error":{"text":'. $e->getMessage() .'}}';
+  }
+
+  if(rsvp_status == false && rsvp_status == 6){
+    $sql = "SELECT status FROM event_attendees
+
+    WHERE attendee_id=:friendid AND event_id=:event_id
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("friendid", $requestjson->friend_id);
+        $stmt->bindParam("event_id", $requestjson->event_id);
+
+        $stmt->execute();
+        $db = null;
+        $rsvp_status = $stmt->fetchObject();
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if($rsvp_status == false){
+        $rsvp_status = 2;
+
+        $sql = "INSERT INTO event_attendees
+
+        (event_id, attendee_id, status)
+        VALUES
+        (:event_id, :friendid, :status)
+
+        ";
+
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
+
+            $stmt->bindParam("event_id", $requestjson->event_id);
+            $stmt->bindParam("myuserid", $requestjson->friend_id);
+            $stmt->bindParam("status", $rsvp_status);
+
+            $stmt->execute();
+            $db = null;
+            echo json_encode($requestjson);
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
+    } else {
+        echo '{"error":{"text":"Event already added","errorid":"233"}}';
+    }
+  }
 }
 
 //Accept an invitation or a request
