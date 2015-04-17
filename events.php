@@ -393,8 +393,6 @@ function newEvent() {
         $stmt->bindParam("end_time", $requestjson->end_time);
         $stmt->execute();
         $requestjson->id = $db->lastInsertId();
-        $db = null;
-        echo json_encode($requestjson);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
@@ -410,7 +408,6 @@ function newEvent() {
     ";
 
     try {
-        $db = getConnection();
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam("event_id", $requestjson->id);
