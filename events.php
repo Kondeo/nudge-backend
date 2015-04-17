@@ -398,6 +398,31 @@ function newEvent() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
+
+    $rsvp_status = 6;
+
+    $sql = "INSERT INTO event_attendees 
+
+    (event_id, attendee_id, status)
+    VALUES
+    (:event_id, :myuserid, :status)
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("event_id", $requestjson->id);
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("status", $rsvp_status);
+        
+        $stmt->execute();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
 }
 
 //Update an existing event
