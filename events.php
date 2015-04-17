@@ -642,7 +642,7 @@ function inviteRSVP(){
       echo '{"error":{"text":'. $e->getMessage() .'}}';
   }
 
-  if(rsvp_status == false && rsvp_status == 6){
+  if(rsvp_status != false && rsvp_status == 6){
     $sql = "SELECT status FROM event_attendees
 
     WHERE attendee_id=:friendid AND event_id=:event_id
