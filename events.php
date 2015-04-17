@@ -411,8 +411,8 @@ function newEvent() {
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam("event_id", "121312312");
-        $stmt->bindParam("myuserid", $session->user_id);
-        $stmt->bindParam("status", $rsvp_status);
+        $stmt->bindParam("myuserid", "121212");
+        $stmt->bindParam("status", "6");
 
         $stmt->execute();
         $db = null;
