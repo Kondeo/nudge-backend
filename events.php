@@ -38,6 +38,7 @@ $app->delete('/events/:id', 'deleteEvent');
 $app->post('/events/rsvp/request', 'requestRSVP');
 $app->post('/events/rsvp/invite', 'inviteRSVP');
 $app->post('/events/rsvp/accept', 'acceptRSVP');
+$app->post('/events/rsvp/attend', 'acceptRSVPInvite');
 $app->post('/events/rsvp/cancel', 'cancelRSVP');
 $app->post('/events/rsvp', 'getRSVPs');
 
@@ -694,7 +695,7 @@ function inviteRSVP(){
   }
 }
 
-//Accept an invitation or a request
+//Accept request to attend users event
 function acceptRSVP(){
   $request = Slim::getInstance()->request();
   $body = $request->getBody();
@@ -766,6 +767,57 @@ function acceptRSVP(){
     }
   }
 
+}
+
+//Accept an invitation to attend an event
+function acceptRSVPInvite(){
+  $request = Slim::getInstance()->request();
+  $body = $request->getBody();
+  $requestjson = json_decode($body);
+
+  $sql = "SELECT
+
+      user_id
+
+      FROM sessions WHERE token=:token LIMIT 1";
+
+  try {
+      $db = getConnection();
+      $stmt = $db->prepare($sql);
+      $stmt->bindParam("token", $requestjson->session_token);
+      $stmt->execute();
+      $session = $stmt->fetchObject();
+      $db = null;
+  } catch(PDOException $e) {
+      echo '{"error":{"text":'. $e->getMessage() .'}}';
+  }
+
+  if(!isset($session->user_id)){
+      echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+      exit;
+  }
+
+  $rsvp_status = 5;
+  $sql = "UPDATE event_attendees SET status=:rsvp_status
+
+  WHERE attendee_id=:myuserid AND event_id=:event_id AND status=2
+
+  ";
+
+  try {
+      $db = getConnection();
+      $stmt = $db->prepare($sql);
+
+      $stmt->bindParam("attendee_id", $session->user_id);
+      $stmt->bindParam("event_id", $requestjson->event_id);
+      $stmt->bindParam("rsvp_status", $rsvp_status);
+
+      $stmt->execute();
+      $db = null;
+      $rsvp_status = $stmt->fetchObject();
+  } catch(PDOException $e) {
+      echo '{"error":{"text":'. $e->getMessage() .'}}';
+  }
 }
 
 //Cancel an rsvp
