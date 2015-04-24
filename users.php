@@ -272,7 +272,7 @@ function removeFriend() {
     $sql = "DELETE FROM user_friends
 
     WHERE (tofriend=:myuserid OR tofriend=:friendid)
-    AND (fromfriend=:myuserid OR fromfriend=:fromfriend)
+    AND (fromfriend=:myuserid OR fromfriend=:friendid)
 
     ";
 
