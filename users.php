@@ -11,7 +11,7 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");         
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
         header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-   
+
 
 include 'Slim/Slim.php';
 
@@ -33,6 +33,7 @@ $app->post('/join', 'userJoin');
 $app->post('/friend/add', 'addFriend');
 $app->post('/friend/accept', 'acceptFriend');
 $app->post('/friend/decline', 'declineFriend');
+$app->post('/friend/remove', 'removeFriend');
 $app->post('/friend', 'getFriends');
 
 $app->delete('/user', 'deleteUser');
@@ -80,7 +81,7 @@ function addFriend() {
         $friend_status = 5;
     } else {
 
-        $sql = "SELECT status FROM user_friends 
+        $sql = "SELECT status FROM user_friends
 
         WHERE ((tofriend=:myuserid OR fromfriend=:myuserid) AND (tofriend=:friendid OR fromfriend=:friendid))
 
@@ -92,7 +93,7 @@ function addFriend() {
 
             $stmt->bindParam("myuserid", $session->user_id);
             $stmt->bindParam("friendid", $requestjson->friend_id);
-            
+
             $stmt->execute();
             $db = null;
             $friend_status = $stmt->fetchObject();
@@ -104,8 +105,8 @@ function addFriend() {
     if($friend_status == false){
         $friend_status = 1;
 
-        $sql = "INSERT INTO user_friends 
-    
+        $sql = "INSERT INTO user_friends
+
         (fromfriend, tofriend, status)
         VALUES
         (:fromfriend, :tofriend, :status)
@@ -119,7 +120,7 @@ function addFriend() {
             $stmt->bindParam("fromfriend", $session->user_id);
             $stmt->bindParam("tofriend", $requestjson->friend_id);
             $stmt->bindParam("status", $friend_status);
-            
+
             $stmt->execute();
             $db = null;
             echo json_encode($requestjson);
@@ -163,8 +164,8 @@ function acceptFriend() {
 
     $friend_status = 5;
 
-    $sql = "UPDATE user_friends 
-    
+    $sql = "UPDATE user_friends
+
     SET status=:status
 
     WHERE tofriend=:myuserid AND fromfriend=:fromfriend
@@ -178,7 +179,7 @@ function acceptFriend() {
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("fromfriend", $requestjson->friend_id);
         $stmt->bindParam("status", $friend_status);
-        
+
         $stmt->execute();
         $db = null;
         echo json_encode($requestjson);
@@ -217,7 +218,7 @@ function declineFriend() {
         exit;
     }
 
-    $sql = "DELETE FROM user_friends 
+    $sql = "DELETE FROM user_friends
 
     WHERE tofriend=:myuserid AND fromfriend=:fromfriend
 
@@ -229,7 +230,59 @@ function declineFriend() {
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("fromfriend", $requestjson->friend_id);
-        
+
+        $stmt->execute();
+        $db = null;
+        echo json_encode($requestjson);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+function removeFriend() {
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $requestjson = json_decode($body);
+
+    //Status 1 is requested, not accepted
+    //Status 5 is valid and accepted
+
+    $sql = "SELECT
+
+        user_id
+
+        FROM sessions WHERE token=:token LIMIT 1";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("token", $requestjson->session_token);
+        $stmt->execute();
+        $session = $stmt->fetchObject();
+        $db = null;
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    if(!isset($session->user_id)){
+        echo '{"error":{"text":"Token is not valid","errorid":"12"}}';
+        exit;
+    }
+
+    $sql = "DELETE FROM user_friends
+
+    WHERE (tofriend=:myuserid OR tofriend=:friendid)
+    AND (fromfriend=:myuserid OR fromfriend=:friendid)
+
+    ";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+
+        $stmt->bindParam("myuserid", $session->user_id);
+        $stmt->bindParam("friendid", $requestjson->friend_id);
+
         $stmt->execute();
         $db = null;
         echo json_encode($requestjson);
@@ -275,7 +328,7 @@ function getFriends() {
     //Get current friends
     $friend_status = 5;
 
-    $sql = "SELECT * FROM user_friends 
+    $sql = "SELECT * FROM user_friends
 
     WHERE (tofriend=:myuserid OR fromfriend=:myuserid) AND status=:status
 
@@ -287,7 +340,7 @@ function getFriends() {
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $friend_status);
-        
+
         $stmt->execute();
         $db = null;
         $raw_friends_current = $stmt->fetchAll();
@@ -314,22 +367,22 @@ function getFriends() {
                 ";
 
                 $stmt = $db->prepare($sql);
-                
+
                 $stmt->bindParam("userid1", $raw_friend['tofriend']);
                 $stmt->bindParam("userid2", $raw_friend['fromfriend']);
-                
+
                 $stmt->execute();
 
                 $store = "";
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                
+
                 if($session->user_id != $store[0]['id']){
                     $friends_current[$i] = $store[0];
-                    
+
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
                     $friends_current[$i] = $store[1];
-                    
+
                     $i++;
                 }
             }
@@ -341,13 +394,13 @@ function getFriends() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-    
+
     //------------------------------------
 
     //Get friend requests to me
     $friend_status = 1;
 
-    $sql = "SELECT * FROM user_friends 
+    $sql = "SELECT * FROM user_friends
 
     WHERE tofriend=:myuserid AND status=:status
 
@@ -359,7 +412,7 @@ function getFriends() {
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $friend_status);
-        
+
         $stmt->execute();
         $db = null;
         $raw_friends_requestme = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -389,19 +442,19 @@ function getFriends() {
                 $stmt = $db->prepare($sql);
 
                 $stmt->bindParam("userid", $raw_friend["fromfriend"]);
-                
+
                 $stmt->execute();
 
                 $store = "";
                 $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                
+
                 if($session->user_id != $store[0]['id']){
                     $friends_requestme[$i] = $store[0];
-                    
+
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
                     $friends_requestme[$i] = $store[1];
-                    
+
                     $i++;
                 }
 
@@ -418,7 +471,7 @@ function getFriends() {
     //Get pending friend requests to others
     $friend_status = 1;
 
-    $sql = "SELECT * FROM user_friends 
+    $sql = "SELECT * FROM user_friends
 
     WHERE fromfriend=:myuserid AND status=:status
 
@@ -430,7 +483,7 @@ function getFriends() {
 
         $stmt->bindParam("myuserid", $session->user_id);
         $stmt->bindParam("status", $friend_status);
-        
+
         $stmt->execute();
         $db = null;
         $raw_friends_requested = $stmt->fetchAll();
@@ -460,19 +513,19 @@ function getFriends() {
                 $stmt = $db->prepare($sql);
 
                 $stmt->bindParam("userid", $raw_friend["tofriend"]);
-                
+
                 $stmt->execute();
 
                 $store = "";
                 $store = $stmt->fetchAll();
-                
+
                 if($session->user_id != $store[0]['id']){
                     $friends_requested[$i] = $store[0];
-                    
+
                     $i++;
                 } else if ($session->user_id != $store[1]['id']){
                     $friends_requested[$i] = $store[1];
-                    
+
                     $i++;
                 }
 
@@ -727,7 +780,7 @@ function getUser($id) {
         $friend_status = 5;
     } else {
 
-        $sql = "SELECT status FROM user_friends 
+        $sql = "SELECT status FROM user_friends
 
         WHERE (fromfriend=:myuserid AND tofriend=:friendid)
 
@@ -739,7 +792,7 @@ function getUser($id) {
 
             $stmt->bindParam("myuserid", $session->user_id);
             $stmt->bindParam("friendid", $id);
-            
+
             $stmt->execute();
             $db = null;
             $friend_status = $stmt->fetchObject();
@@ -753,7 +806,7 @@ function getUser($id) {
 
         //If current user didnt request friendship, check if vice versa
         if($friend_status == false){
-            $sql = "SELECT status FROM user_friends 
+            $sql = "SELECT status FROM user_friends
 
             WHERE (tofriend=:myuserid AND fromfriend=:friendid)
 
@@ -765,7 +818,7 @@ function getUser($id) {
 
                 $stmt->bindParam("myuserid", $session->user_id);
                 $stmt->bindParam("friendid", $id);
-                
+
                 $stmt->execute();
                 $db = null;
                 $friend_status = $stmt->fetchObject();
@@ -807,7 +860,7 @@ function getUser($id) {
 
         $sql = "SELECT
 
-        username, name, phone, 
+        username, name, phone,
         address1, address2, city,
         state, zip, profile
 
@@ -861,12 +914,12 @@ function updateUser() {
         exit;
     }
 
-    $sql = "UPDATE users 
-    SET 
-    
+    $sql = "UPDATE users
+    SET
+
     username=:username,
     name=:name,
-    phone=:phone, 
+    phone=:phone,
     address1=:address1,
     address2=:address2,
     city=:city,
@@ -890,7 +943,7 @@ function updateUser() {
         $stmt->bindParam("state", $user->state);
         $stmt->bindParam("zip", $user->zip);
         $stmt->bindParam("profile", $user->profile);
-        
+
         $stmt->execute();
         $db = null;
         echo json_encode($user);
@@ -974,14 +1027,14 @@ function stringSearch() {
         name LIKE CONCAT('%', :query, '%') OR
         username LIKE CONCAT('%', :query, '%') OR
         phone LIKE CONCAT('%', :query, '%') OR
-        address1 LIKE CONCAT('%', :query, '%') 
+        address1 LIKE CONCAT('%', :query, '%')
     ORDER BY name
     LIMIT 200";
-    
+
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        
+
         $stmt->bindParam("query", $requestparams->query);
 
         $stmt->execute();
@@ -993,7 +1046,8 @@ function stringSearch() {
     }
 }
 
-function findByParameter() {
+//Incomplete
+/* function findByParameter() {
 
     //INCOMPLETE FUNCTION
 
@@ -1072,17 +1126,17 @@ function findByParameter() {
     	Address1 LIKE :address1 AND
     	Email LIKE :email1 AND
     	HomePhone LIKE :phone1 AND
-    	City LIKE :city 
+    	City LIKE :city
     ORDER BY LastName
     LIMIT 200";
-    
 
-    
+
+
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         //$query = "%".$query."%";
-        
+
         $stmt->bindParam("firstname", $FirstName);
         $stmt->bindParam("lastname", $LastName);
         $stmt->bindParam("company", $Company);
@@ -1098,7 +1152,7 @@ function findByParameter() {
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-}
+} */
 
 function utf8ize($mixed) {
     if (is_array($mixed)) {
