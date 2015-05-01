@@ -454,10 +454,9 @@ function updateEvent($id) {
     $sql = "UPDATE events
     SET
 
-    public=:public, name=:name, category=:category, description=:description,
-    start_time=:start_time, end_time=:end_time
+    this=:this
 
-    WHERE id=:id AND host_id=:user_id";
+    WHERE id=:id AND user_id=:user_id";
 
     try {
         $db = getConnection();
@@ -465,12 +464,6 @@ function updateEvent($id) {
 
         $stmt->bindParam("id", $id);
         $stmt->bindParam("user_id", $session->user_id);
-        $stmt->bindParam("public", $requestjson->public);
-        $stmt->bindParam("name", $requestjson->name);
-        $stmt->bindParam("category", $requestjson->category);
-        $stmt->bindParam("description", $requestjson->description);
-        $stmt->bindParam("start_time", $requestjson->start_time);
-        $stmt->bindParam("end_time", $requestjson->end_time);
 
         $stmt->execute();
         $db = null;
