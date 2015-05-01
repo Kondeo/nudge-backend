@@ -469,6 +469,7 @@ function updateEvent($id) {
 
         $stmt->execute();
         $db = null;
+        $requestjson->id = $id;
         echo json_encode($requestjson);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
