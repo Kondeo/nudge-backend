@@ -336,6 +336,8 @@ function getEvent($id) {
         $stmt->bindParam("event_id", $id);
         $stmt->execute();
         $user = $stmt->fetchObject();
+        $user->start_time = date(DATE_RFC3339, strtotime($user->start_time));
+        $user->end_time = date(DATE_RFC3339, strtotime($user->end_time));
         $db = null;
         $user->status = $rsvp_status;
         echo json_encode($user);
