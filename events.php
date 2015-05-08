@@ -753,6 +753,8 @@ function acceptRSVP(){
       echo '{"error":{"text":'. $e->getMessage() .'}}';
   }
 
+  var_dump($rsvp_status);
+
   if($rsvp_status != false && $rsvp_status == 6){
     $rsvp_status = 5;
     $sql = "UPDATE event_attendees SET status=:rsvp_status
