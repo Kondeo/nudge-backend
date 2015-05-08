@@ -733,8 +733,6 @@ function acceptRSVP(){
       exit;
   }
 
-  $rsvp_status;
-
   $sql = "SELECT status FROM event_attendees
 
   WHERE attendee_id=:myuserid AND event_id=:event_id
@@ -745,7 +743,7 @@ function acceptRSVP(){
       $db = getConnection();
       $stmt = $db->prepare($sql);
 
-      $stmt->bindParam("friendid", $session->user_id);
+      $stmt->bindParam("myuserid", $session->user_id);
       $stmt->bindParam("event_id", $requestjson->event_id);
 
       $stmt->execute();
