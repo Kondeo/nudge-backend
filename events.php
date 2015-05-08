@@ -813,7 +813,7 @@ function acceptRSVPInvite(){
   $rsvp_status = 5;
   $sql = "UPDATE event_attendees SET status=:rsvp_status
 
-  WHERE attendee_id=:myuserid AND event_id=:event_id AND status=2
+  WHERE attendee_id=:attendee_id AND event_id=:event_id AND status=2
 
   ";
 
