@@ -878,7 +878,7 @@ function cancelRSVP(){
 
       $stmt->execute();
       $db = null;
-      $rsvp_status = $stmt->fetchObject();
+      echo $requestjson;
   } catch(PDOException $e) {
       echo '{"error":{"text":'. $e->getMessage() .'}}';
   }
