@@ -827,7 +827,7 @@ function acceptRSVPInvite(){
 
       $stmt->execute();
       $db = null;
-      $rsvp_status = $stmt->fetchObject();
+      echo $requstjson;
   } catch(PDOException $e) {
       echo '{"error":{"text":'. $e->getMessage() .'}}';
   }
