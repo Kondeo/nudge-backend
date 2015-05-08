@@ -733,6 +733,8 @@ function acceptRSVP(){
       exit;
   }
 
+  $rsvp_status;
+
   $sql = "SELECT status FROM event_attendees
 
   WHERE attendee_id=:myuserid AND event_id=:event_id
