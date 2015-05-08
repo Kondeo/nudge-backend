@@ -753,29 +753,30 @@ function acceptRSVP(){
       echo '{"error":{"text":'. $e->getMessage() .'}}';
   }
 
-  var_dump($rsvp_status);
+  if($rsvp_status != false){
+    $rsvp_status = $rsvp_status->status;
+    if($rsvp_status == 6){
+        $rsvp_status = 5;
+        $sql = "UPDATE event_attendees SET status=:rsvp_status
 
-  if($rsvp_status != false && $rsvp_status == 6){
-    $rsvp_status = 5;
-    $sql = "UPDATE event_attendees SET status=:rsvp_status
+        WHERE attendee_id=:attendee_id AND event_id=:event_id
 
-    WHERE attendee_id=:attendee_id AND event_id=:event_id
+        ";
 
-    ";
+        try {
+            $db = getConnection();
+            $stmt = $db->prepare($sql);
 
-    try {
-        $db = getConnection();
-        $stmt = $db->prepare($sql);
+            $stmt->bindParam("attendee_id", $requestjson->attendee_id);
+            $stmt->bindParam("event_id", $requestjson->event_id);
+            $stmt->bindParam("rsvp_status", $rsvp_status);
 
-        $stmt->bindParam("attendee_id", $requestjson->attendee_id);
-        $stmt->bindParam("event_id", $requestjson->event_id);
-        $stmt->bindParam("rsvp_status", $rsvp_status);
-
-        $stmt->execute();
-        $db = null;
-        $rsvp_status = $stmt->fetchObject();
-    } catch(PDOException $e) {
-        echo '{"error":{"text":'. $e->getMessage() .'}}';
+            $stmt->execute();
+            $db = null;
+            $rsvp_status = $stmt->fetchObject();
+        } catch(PDOException $e) {
+            echo '{"error":{"text":'. $e->getMessage() .'}}';
+        }
     }
   }
 
