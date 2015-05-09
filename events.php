@@ -672,7 +672,7 @@ function getHostedRSVPs(){
 
                 $stmt = $db->prepare($sql);
 
-                $stmt->bindParam("userid", $attendee->id);
+                $stmt->bindParam("userid", $attendee['id']);
 
                 $stmt->execute();
 
