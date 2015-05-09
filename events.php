@@ -40,7 +40,7 @@ $app->post('/events/rsvp/invite', 'inviteRSVP');
 $app->post('/events/rsvp/accept', 'acceptRSVP');
 $app->post('/events/rsvp/attend', 'acceptRSVPInvite');
 $app->post('/events/rsvp/cancel', 'cancelRSVP');
-$app->get('/events/rsvp/hosted', 'getHostedRSVPs');
+$app->post('/events/rsvp/hosted', 'getHostedRSVPs');
 $app->post('/events/rsvp', 'getRSVPs');
 
 $app->run();
