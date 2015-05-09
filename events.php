@@ -634,7 +634,7 @@ function getHostedRSVPs(){
         exit;
     }
 
-    $sql = "SELECT status FROM event_attendees
+    $sql = "SELECT * FROM event_attendees
 
     WHERE event_id=:event_id
 
@@ -648,10 +648,51 @@ function getHostedRSVPs(){
 
         $stmt->execute();
         $db = null;
-        echo $stmt->fetchObject();
+        $attendees = $stmt->fetchObject();
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
+
+    //Get attendee details
+    $i = 0;
+
+    $attendee_details = "";
+
+    try {
+        $db = getConnection();
+
+        if ($attendees != false) {
+
+            foreach ($attendees as $attendee) {
+                $sql = "SELECT name,city FROM users
+
+                WHERE id=:userid
+
+                ";
+
+                $stmt = $db->prepare($sql);
+
+                $stmt->bindParam("userid", $attendee->id);
+
+                $stmt->execute();
+
+                $store = "";
+                $store = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $attendee_details[$i] = $store;
+
+                $i++;
+            }
+
+        }
+
+        $db = null;
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+    echo $attendee_details;
 }
 
 //Invite a user to an event
